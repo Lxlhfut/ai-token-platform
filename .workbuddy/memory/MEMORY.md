@@ -26,11 +26,24 @@
 - 兑换码表：`redeem_codes`（code, amount, is_used, used_by, used_at）
 - 旧手动充值接口 `/api/admin/recharge` 仍保留
 
+### Anthropic 兼容端点（2026-06-24 新增）
+- `/v1/messages` — Anthropic 原生格式（支持 Claude Code / Claude Desktop）
+- `/v1/messages/count_tokens` — Anthropic token 计数
+- 认证：支持 `x-api-key` 和 `Authorization: Bearer` 两种方式
+- 适配器：`app/services/anthropic_adapter.py`（Anthropic ↔ OpenAI 双向转换）
+- 错误响应：用 `JSONResponse` 直接返回避免 FastAPI 包 `{"detail": ...}`
+
+### 推理模型注意事项
+- `deepseek-v4-pro` 是推理模型（类似 DeepSeek-R1），思考占 ~80% token，实际回答占 ~20%
+- **必须给足够 max_tokens（建议 ≥1024）**，否则 content 为空（token 全被推理消耗）
+- 上游返回 `reasoning_content` 字段存放推理过程，content 是最终回答
+
 ### 关键文件
 - `app/models.py` - 数据库模型（User, ApiKey, RedeemCode, UpstreamChannel, ModelPricing, UsageLog, Transaction）
 - `app/routers/user.py` - 用户 API（用户名注册/登录/key 管理/兑换码充值）
 - `app/routers/admin.py` - 管理 API（渠道/定价/用户/兑换码生成）
-- `app/routers/proxy.py` - OpenAI 代理
+- `app/routers/proxy.py` - OpenAI + Anthropic 双协议代理
+- `app/services/anthropic_adapter.py` - Anthropic ↔ OpenAI 格式双向转换
 - `app/static/app.js` - 前端全部交互逻辑（含 sendSmsCode 倒计时）
 - `app/templates/terms.html` - 用户注册协议页面
 - `app/templates/privacy.html` - 隐私政策页面
