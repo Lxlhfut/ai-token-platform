@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户中心 - {{ platform_name }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- 认证面板（未登录时显示） -->
+  <div id="auth-panel" class="card auth-card">
+    <div class="tabs">
+      <button class="tab active" data-tab="login">登录</button>
+      <button class="tab" data-tab="register">注册</button>
+    </div>
+
+    <!-- 登录 -->
+    <form id="login-form" class="auth-form">
+      <label>用户名</label><input type="text" name="username" required minlength="3" autocomplete="username">
+      <label>密码</label><input type="password" name="password" required minlength="6" autocomplete="current-password">
+      <button type="submit" class="btn btn-primary btn-block">登录</button>
+    </form>
+
+    <!-- 注册 -->
+    <form id="register-form" class="auth-form" style="display:none">
+      <label>用户名</label><input type="text" name="username" required minlength="3" maxlength="50" autocomplete="username">
+      <label>密码</label><input type="password" name="password" required minlength="6" autocomplete="new-password">
+      <label>确认密码</label><input type="password" name="confirm_password" required minlength="6" autocomplete="new-password">
+      <label class="checkbox-label">
+        <input type="checkbox" name="agreed_terms" required>
+        <span>我已阅读并同意 <a href="/terms" target="_blank">《用户注册协议》</a> 和 <a href="/privacy" target="_blank">《隐私政策》</a></span>
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">注册</button>
+    </form>
+
+    <p id="auth-msg" class="msg"></p>
+  </div>
+
+  <!-- 主体布局（登录后显示） -->
+  <div id="app-layout" class="app-layout" style="display:none">
+
+    <!-- 移动端侧边栏切换按钮 -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      菜单
+    </button>
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <a href="/" class="sidebar-brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        {{ platform_name }}
+      </a>
+      <nav class="sidebar-nav">
+        <button class="sidebar-item active" data-tab="overview" onclick="switchTab('overview', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          概览
+        </button>
+        <button class="sidebar-item" data-tab="recharge" onclick="switchTab('recharge', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 0 2h-2a2 2 0 0 0 0 4h2a1 1 0 0 1 0 2H5a2 2 0 0 1 0-4h9"/></svg>
+          充值
+        </button>
+        <button class="sidebar-item" data-tab="apikey" onclick="switchTab('apikey', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          API Key
+        </button>
+        <button class="sidebar-item" data-tab="tutorials" onclick="switchTab('tutorials', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="20" y2="6"/></svg>
+          接入教程
+        </button>
+        <button class="sidebar-item" data-tab="records" onclick="switchTab('records', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          使用记录
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="logout-btn" class="btn btn-outline" style="display:none">退出登录</button>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+
+      <!-- ====== 概览标签页 ====== -->
+      <div class="tab-pane active" id="pane-overview">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          控制台概览
+        </div>
+
+        <div class="stats-row">
+          <div class="card stat stat-balance"><span class="stat-label">余额（Token 额度）</span><span class="stat-value" id="balance">--</span><span class="stat-hint" id="balance-hint"></span></div>
+          <div class="card stat"><span class="stat-label">用户名</span><span class="stat-value" id="username">--</span></div>
+          <div class="card stat"><span class="stat-label">邮箱</span><span class="stat-value stat-email" id="email">--</span></div>
+        </div>
+
+        <div class="card section-card guide-card">
+          <h3>🚀 3 步开始使用</h3>
+          <ol class="guide-steps">
+            <li><strong>注册账户</strong> → 系统自动生成你的 API Key（无需懂代码）</li>
+            <li><strong>充值余额</strong> → 扫码支付或输入兑换码，余额立即到账</li>
+            <li><strong>填写到软件里</strong> → 复制「Base URL + API Key」，填入 Cursor / Cherry Studio / LobeChat 等即可直接用</li>
+          </ol>
+          <p class="guide-note" id="recharge-notice"></p>
+        </div>
+
+        <!-- 接入配置快速复制 -->
+        <div class="card section-card connect-info-card">
+          <div class="section-header"><h3>🔗 接入配置（填入这两项即可）</h3></div>
+          <p class="section-desc" style="text-align:left;margin-bottom:16px">无论使用什么软件，都只需要填写下面这两项配置：</p>
+          <div class="connect-fields">
+            <div class="connect-field">
+              <span class="field-label">API Base URL</span>
+              <div class="field-row">
+                <code class="field-value" id="display-base-url">loading...</code>
+                <button class="btn btn-outline btn-sm" onclick="copyField('display-base-url', this)">复制</button>
+              </div>
+              <p class="field-hint">填到软件里的「Base URL / API 地址」这一项</p>
+            </div>
+            <div class="connect-field">
+              <span class="field-label">API Key（调用凭证）</span>
+              <div class="field-row">
+                <code class="field-value" id="display-api-key">loading...</code>
+                <button class="btn btn-outline btn-sm" onclick="copyField('display-api-key', this)">复制</button>
+              </div>
+              <p class="field-hint">填到软件里的「API Key / 密钥」这一项</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 模型定价 -->
+        <div class="card section-card">
+          <div class="section-header">
+            <h3>🤖 模型定价（元/1000 tokens）</h3>
+          </div>
+          <p class="section-desc" style="text-align:left;margin-bottom:8px">API 调用时在请求 body 中指定 <code>model</code> 即可，平台按实际使用的模型计费。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>模型</th><th>输入</th><th>输出</th><th>说明</th></tr></thead>
+              <tbody id="pricing-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 充值标签页 ====== -->
+      <div class="tab-pane" id="pane-recharge">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 0 2h-2a2 2 0 0 0 0 4h2a1 1 0 0 1 0 2H5a2 2 0 0 1 0-4h9"/></svg>
+          充值余额
+        </div>
+
+        <div class="card section-card recharge-card">
+          <p class="section-desc" style="text-align:left;margin-bottom:12px">支持两种充值方式：扫码支付或输入兑换码（卡密），充值后余额立即到账。</p>
+
+          <!-- 充值方式切换 -->
+          <div class="tool-tabs recharge-tabs" style="margin-bottom:16px">
+            <button class="tool-tab active" onclick="switchRechargeTab('scan', this)">📱 扫码充值</button>
+            <button class="tool-tab" onclick="switchRechargeTab('redeem', this)">🎫 兑换码充值</button>
+          </div>
+
+          <!-- 扫码充值面板 -->
+          <div id="recharge-scan" class="recharge-panel">
+            <div class="guide-steps-visual" style="margin-bottom:20px">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>选择支付方式和金额</strong><p>选择微信或支付宝，输入充值金额</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>扫码支付</strong><p>使用对应 App 扫描生成的二维码完成支付</p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>点击确认到账</strong><p>支付完成后点击「我已支付」按钮，余额即时到账</p></div></div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <button id="pay-wechat" class="btn btn-primary btn-sm" onclick="selectPayMethod('wechat')" style="flex:1">💚 微信支付</button>
+              <button id="pay-alipay" class="btn btn-outline btn-sm" onclick="selectPayMethod('alipay')" style="flex:1">💙 支付宝</button>
+            </div>
+            <div class="redeem-row" style="margin-bottom:12px">
+              <label style="white-space:nowrap;line-height:40px;margin-right:8px">充值金额</label>
+              <input id="scan-amount" type="number" step="0.01" min="0.01" value="10" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);" placeholder="输入金额，如 10">
+              <span style="line-height:40px;margin-left:4px">元</span>
+            </div>
+            <div class="quick-amounts" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+              <button class="btn btn-outline btn-sm" onclick="setScanAmount(5)">¥5</button>
+              <button class="btn btn-outline btn-sm" onclick="setScanAmount(10)">¥10</button>
+              <button class="btn btn-outline btn-sm" onclick="setScanAmount(20)">¥20</button>
+              <button class="btn btn-outline btn-sm" onclick="setScanAmount(50)">¥50</button>
+              <button class="btn btn-outline btn-sm" onclick="setScanAmount(100)">¥100</button>
+            </div>
+            <button id="create-order-btn" class="btn btn-primary btn-block" style="margin-bottom:12px">生成支付二维码</button>
+          </div>
+
+          <!-- 兑换码充值面板 -->
+          <div id="recharge-redeem" class="recharge-panel" style="display:none">
+            <div class="redeem-row">
+              <input id="redeem-input" type="text" placeholder="输入兑换码，例如：abc123xyz..." style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);">
+              <button id="redeem-btn" class="btn btn-primary" style="white-space:nowrap">立即兑换</button>
+            </div>
+          </div>
+
+          <p id="redeem-msg" class="msg" style="margin-top:8px"></p>
+
+          <!-- 充值记录 -->
+          <div style="margin-top:16px">
+            <div class="section-header" style="margin-bottom:8px"><h4 style="font-size:.9rem;color:var(--muted)">充值记录</h4></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>时间</th><th>金额</th><th>方式</th><th>状态</th></tr></thead>
+                <tbody id="recharge-orders-body"><tr><td colspan="4" style="color:var(--muted)">加载中...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== API Key 标签页 ====== -->
+      <div class="tab-pane" id="pane-apikey">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          API Key 管理
+        </div>
+
+        <div class="card section-card">
+          <div class="section-header">
+            <div><h3>API Key（调用凭证）</h3><p class="section-desc">Key 是调用凭证，注册后自动生成。余额才是您购买的 Token 额度。</p></div>
+            <button id="create-key-btn" class="btn btn-primary btn-sm">创建新 Key</button>
+          </div>
+          <div id="keys-list"></div>
+        </div>
+
+        <!-- 接入配置信息卡 -->
+        <div class="card section-card connect-info-card">
+          <div class="section-header"><h3>🔗 接入配置（填入这两项即可）</h3></div>
+          <p class="section-desc" style="text-align:left;margin-bottom:16px">无论使用什么软件，都只需要填写下面这两项配置：</p>
+          <div class="connect-fields">
+            <div class="connect-field">
+              <span class="field-label">API Base URL</span>
+              <div class="field-row">
+                <code class="field-value" id="display-base-url-2">loading...</code>
+                <button class="btn btn-outline btn-sm" onclick="copyField('display-base-url-2', this)">复制</button>
+              </div>
+              <p class="field-hint">填到软件里的「Base URL / API 地址」这一项</p>
+            </div>
+            <div class="connect-field">
+              <span class="field-label">API Key（调用凭证）</span>
+              <div class="field-row">
+                <code class="field-value" id="display-api-key-2">loading...</code>
+                <button class="btn btn-outline btn-sm" onclick="copyField('display-api-key-2', this)">复制</button>
+              </div>
+              <p class="field-hint">填到软件里的「API Key / 密钥」这一项</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 接入教程标签页 ====== -->
+      <div class="tab-pane" id="pane-tutorials">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          主流软件接入教程
+        </div>
+
+        <div class="card section-card">
+          <p class="section-desc" style="text-align:left;margin-bottom:16px">选择你使用的软件，按步骤填写 Base URL 和 API Key 即可：</p>
+          <div class="tool-tabs">
+            <button class="tool-tab active" onclick="showTool('cursor', this)">Cursor</button>
+            <button class="tool-tab" onclick="showTool('chatgpt-next', this)">ChatGPT-Next-Web</button>
+            <button class="tool-tab" onclick="showTool('cherry', this)">Cherry Studio</button>
+            <button class="tool-tab" onclick="showTool('lobechat', this)">LobeChat</button>
+            <button class="tool-tab" onclick="showTool('openai-translator', this)">OpenAI Translator</button>
+            <button class="tool-tab" onclick="showTool('python', this)">Python 代码</button>
+          </div>
+
+          <div id="tool-cursor" class="tool-guide">
+            <div class="guide-steps-visual">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>打开 Cursor 设置</strong><p>点击左上角 <code>Cursor</code> 菜单 → <code>Settings</code> → <code>Cursor Settings</code>（或按 <kbd>Ctrl+Shift+J</kbd>）</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>找到 Models 页面</strong><p>左侧菜单点击 <code>Models</code>，滚动到底部找到 <strong>「OpenAI API Key」</strong> 区域</p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>填写 API Key</strong><p>在 <code>OpenAI API Key</code> 输入框中填入你的 <strong>API Key</strong></p></div></div>
+              <div class="step-item"><span class="step-num">4</span><div class="step-body"><strong>填写 Base URL（关键！）</strong><p>勾选 <code>Override OpenAI Base URL</code>，填入 <strong>API Base URL</strong>（末尾不要加斜杠）</p></div></div>
+              <div class="step-item"><span class="step-num">5</span><div class="step-body"><strong>点击 Verify 验证</strong><p>点击 <code>Verify</code> 按钮，显示绿色 ✅ 即说明配置成功！</p></div></div>
+            </div>
+          </div>
+
+          <div id="tool-chatgpt-next" class="tool-guide" style="display:none">
+            <div class="guide-steps-visual">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>打开设置页面</strong><p>点击右下角「设置」图标（⚙️），进入系统设置</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>填写 API Key</strong><p>在 <code>API Key</code> 输入框中填入你的 <strong>API Key</strong></p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>填写自定义接口地址</strong><p>在 <code>接口地址 / Custom Endpoint</code> 填入 <strong>API Base URL</strong>（填到 <code>/v1</code> 这一层）</p></div></div>
+              <div class="step-item"><span class="step-num">4</span><div class="step-body"><strong>保存并对话</strong><p>点击确认保存，返回对话界面直接开始使用即可</p></div></div>
+            </div>
+          </div>
+
+          <div id="tool-cherry" class="tool-guide" style="display:none">
+            <div class="guide-steps-visual">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>打开 Cherry Studio</strong><p>进入 <code>设置</code> → <code>模型服务</code>（或左侧齿轮图标）</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>添加自定义提供商</strong><p>点击 <code>添加服务商</code>，类型选择 <code>OpenAI</code> 兼容</p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>填写配置</strong><p><code>API 地址</code> 填 <strong>API Base URL</strong>，<code>API Key</code> 填 <strong>API Key</strong></p></div></div>
+              <div class="step-item"><span class="step-num">4</span><div class="step-body"><strong>添加模型</strong><p>点击「检测」或手动输入模型名称（如 <code>gpt-4o-mini</code>），保存后即可对话</p></div></div>
+            </div>
+          </div>
+
+          <div id="tool-lobechat" class="tool-guide" style="display:none">
+            <div class="guide-steps-visual">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>打开设置</strong><p>左下角点击「设置」图标，进入 <code>AI 服务商</code> 页面</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>选择 OpenAI</strong><p>在服务商列表中找到 <code>OpenAI</code>，点击展开设置</p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>填写 API Key 和接口代理地址</strong><p><code>API Key</code> 填入 <strong>API Key</strong>；开启「接口代理地址」开关，填入 <strong>API Base URL</strong></p></div></div>
+              <div class="step-item"><span class="step-num">4</span><div class="step-body"><strong>开始对话</strong><p>返回对话页面，选择模型，即可开始使用</p></div></div>
+            </div>
+          </div>
+
+          <div id="tool-openai-translator" class="tool-guide" style="display:none">
+            <div class="guide-steps-visual">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>打开插件设置</strong><p>点击浏览器工具栏中的 OpenAI Translator 图标 → 设置（⚙️）</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>选择 OpenAI 服务商</strong><p>在 AI Provider 处选择 <code>OpenAI</code></p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>填写 API Key</strong><p>在 <code>API Key</code> 输入框填入 <strong>API Key</strong></p></div></div>
+              <div class="step-item"><span class="step-num">4</span><div class="step-body"><strong>填写 API URL</strong><p>在 <code>API URL</code> 处填入 <strong>API Base URL</strong>，保存即可</p></div></div>
+            </div>
+          </div>
+
+          <div id="tool-python" class="tool-guide" style="display:none">
+            <p class="section-desc" style="text-align:left;margin-bottom:8px">适合开发者，安装 <code>pip install openai</code> 后运行：</p>
+            <pre class="code-block" id="code-example"># loading...</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 使用记录标签页 ====== -->
+      <div class="tab-pane" id="pane-records">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          使用记录
+        </div>
+
+        <div class="card section-card">
+          <h3>调用记录</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>时间</th><th>模型</th><th>Tokens</th><th>扣费</th><th>状态</th></tr></thead>
+              <tbody id="usage-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card section-card">
+          <h3>交易记录</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>时间</th><th>类型</th><th>金额</th><th>余额</th><th>备注</th></tr></thead>
+              <tbody id="tx-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- 支付弹窗（全局） -->
+  <div id="payment-modal" class="payment-modal" style="display:none">
+    <div class="payment-content">
+      <h4 style="text-align:center;margin-bottom:8px">扫码支付</h4>
+      <p style="text-align:center;color:var(--muted);margin-bottom:16px" id="payment-info"></p>
+      <div class="qr-placeholder">
+        <div class="qr-inner">
+          <span style="font-size:4rem">📱</span>
+          <p style="color:var(--muted);margin-top:8px" id="qr-amount-display"></p>
+          <p style="font-size:.75rem;color:var(--muted)">请使用对应 App 扫描支付</p>
+          <p style="font-size:.7rem;color:var(--primary)" id="qr-order-no"></p>
+        </div>
+      </div>
+      <p id="pay-error-msg" style="color:var(--danger);font-size:.85rem;text-align:center;margin-top:8px;min-height:1.2em"></p>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-outline btn-block" onclick="closePaymentModal()">取消支付</button>
+        <button class="btn btn-primary btn-block" id="confirm-pay-btn" onclick="confirmPayment()">✅ 我已支付完成</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+  <script>initUserDashboard();</script>
+</body>
+</html>

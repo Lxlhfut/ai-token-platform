@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# 虚拟环境
+venv/
+.venv/
+
+# 环境变量（含密码，不能上传）
+.env
+
+# 数据库（本地数据不上传）
+data/
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 临时文件
+*.log
+server.log
+server2.log
+update.txt
+admin.txt
+_rewrite.py
+fix_chinese.py
+fix_tpl.py
+setup_assets.py
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
