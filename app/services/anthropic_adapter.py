@@ -14,6 +14,24 @@ import uuid
 from fastapi import HTTPException
 
 
+# Claude 模型名 → 平台模型名映射（Claude Code 默认发 claude-3-5-sonnet，平台没有这个模型）
+_ANTHROPIC_MODEL_MAP: dict[str, str] = {
+    "claude-3-5-sonnet-20241022": "deepseek-v4-pro",
+    "claude-3-5-sonnet-20240620": "deepseek-v4-pro",
+    "claude-3-opus-20240229": "deepseek-v4-pro",
+    "claude-3-sonnet-20240229": "deepseek-v4-pro",
+    "claude-3-haiku-20240307": "deepseek-chat",
+}
+
+# 推理模型列表（这些模型需要足够的 max_tokens 用于思考过程）
+_REASONING_MODELS: set[str] = {
+    "deepseek-v4-pro",
+    "deepseek-reasoner",
+}
+# 推理模型最低 max_tokens（低于此值会被强制提升）
+_REASONING_MIN_MAX_TOKENS: int = 1024
+
+
 # ── 请求转换：Anthropic → OpenAI ──────────────────────────────────────────
 
 def anthropic_to_openai_request(anthropic_body: dict) -> dict:
@@ -50,10 +68,18 @@ def anthropic_to_openai_request(anthropic_body: dict) -> dict:
         else:
             messages.append({"role": role, "content": str(content)})
 
+    raw_model = anthropic_body.get("model", "claude-3-5-sonnet-20241022")
+    model = _ANTHROPIC_MODEL_MAP.get(raw_model, raw_model)
+
+    # 推理模型需要足够的 max_tokens
+    max_tokens = anthropic_body.get("max_tokens", 1024)
+    if model in _REASONING_MODELS and max_tokens < _REASONING_MIN_MAX_TOKENS:
+        max_tokens = _REASONING_MIN_MAX_TOKENS
+
     openai_body: dict = {
-        "model": anthropic_body.get("model", "claude-3-5-sonnet-20241022"),
+        "model": model,
         "messages": messages,
-        "max_tokens": anthropic_body.get("max_tokens", 1024),
+        "max_tokens": max_tokens,
     }
 
     # 透传可选参数

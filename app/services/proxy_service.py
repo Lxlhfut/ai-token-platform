@@ -14,6 +14,10 @@ from app.models import ApiKey, UsageLog, User
 from app.services.billing import calculate_cost, deduct_balance, get_model_pricing
 from app.services.channel import normalize_base_url, select_channel
 
+# 推理模型最低 max_tokens（低于此值 token 全被推理消耗，content 为空）
+_REASONING_MODELS: set[str] = {"deepseek-v4-pro", "deepseek-reasoner"}
+_REASONING_MIN_MAX_TOKENS: int = 1024
+
 settings = get_settings()
 
 
@@ -46,6 +50,11 @@ async def proxy_openai_request(
     pricing = await get_model_pricing(db, model)
     if not pricing:
         raise HTTPException(status_code=402, detail={"error": {"message": f"Model {model} has no pricing configured. Please contact admin.", "type": "invalid_request_error"}})
+
+    # 推理模型保护：max_tokens 不够时 token 全被推理消耗，强制兜底
+    max_tokens = body.get("max_tokens", 0)
+    if model in _REASONING_MODELS and max_tokens < _REASONING_MIN_MAX_TOKENS:
+        body = {**body, "max_tokens": _REASONING_MIN_MAX_TOKENS}
 
     # 流式传输：预估 8192 tokens 的费用作为最低余额门槛，避免用户余额几乎为 0 时白嫖
     est_stream_tokens = 8192 if stream else 1
