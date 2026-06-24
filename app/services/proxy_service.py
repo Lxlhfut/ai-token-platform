@@ -110,8 +110,12 @@ async def _stream_proxy(db, user, api_key, channel, url, headers, body, model, p
                 async with client.stream("POST", url, json=body, headers=headers) as resp:
                     if resp.status_code != 200:
                         error_body = await resp.aread()
-                        yield error_body
-                        await _log_usage(db, user, api_key, channel, model, 0, 0, 0, 0, request_id, "error", error_body.decode()[:500])
+                        error_text = error_body.decode()[:500]
+                        # 按 SSE 格式返回错误，客户端才能正确解析
+                        sse_error = json.dumps({"error": {"message": error_text, "type": "upstream_error", "status_code": resp.status_code}})
+                        yield f"data: {sse_error}\n\n"
+                        yield "data: [DONE]\n\n"
+                        await _log_usage(db, user, api_key, channel, model, 0, 0, 0, 0, request_id, "error", error_text)
                         await db.commit()
                         return
                     async for line in resp.aiter_lines():

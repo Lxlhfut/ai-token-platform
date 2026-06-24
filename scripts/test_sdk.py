@@ -6,8 +6,8 @@
 
 import sys, traceback
 
-API_KEY = "sk-be24c3885a94455e6a60f0b21ecf592df8c35d7b0accf397"
-API_BASE = "http://localhost:8000"
+API_KEY = "sk-7d82571ce9bb0ea96223ac9e216c67fdb3e933bd919e577d"
+API_BASE = "http://120.26.162.115"
 TEST_MODEL = "qwen-turbo"
 
 passed = 0

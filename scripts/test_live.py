@@ -1,6 +1,6 @@
 import json, urllib.request, sys
 
-url = "http://localhost:8000/v1/chat/completions"
+url = "http://120.26.162.115/v1/chat/completions"
 body = json.dumps({"model": "qwen-turbo", "messages": [{"role": "user", "content": "say hello"}]}).encode()
 headers = {
     "Authorization": "Bearer sk-616ff4afd3b6e05e637e5f1dd4574e1ee1105b7683913a85",
