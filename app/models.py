@@ -50,6 +50,9 @@ class User(Base):
     balance: Mapped[float] = mapped_column(Float, default=0.0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     agreed_terms: Mapped[bool] = mapped_column(Boolean, default=False)
+    referrer_agent_id: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True, default=None
+    )  # 注册时填写邀请码后绑定的代理ID（逻辑外键）
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     api_keys: Mapped[list["ApiKey"]] = relationship(back_populates="user")
@@ -148,10 +151,99 @@ class RedeemCode(Base):
     remark: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
 
+class AgentStatus(str, enum.Enum):
+    pending = "pending"      # 待审批
+    approved = "approved"    # 已审批（激活）
+    rejected = "rejected"    # 已拒绝
+    disabled = "disabled"    # 已禁用
+
+
+class Agent(Base):
+    """代理表 — 一个用户最多只能有一条代理记录"""
+    __tablename__ = "agents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    invite_code: Mapped[Optional[str]] = mapped_column(String(32), unique=True, index=True, nullable=True)
+    status: Mapped[AgentStatus] = mapped_column(Enum(AgentStatus), default=AgentStatus.pending)
+    commission_rate: Mapped[float] = mapped_column(Float, default=0.80)   # 代理佣金比例（默认80%）
+    total_commission: Mapped[float] = mapped_column(Float, default=0.0)   # 累计已产生的佣金
+    available_commission: Mapped[float] = mapped_column(Float, default=0.0)  # 可提现佣金余额
+    default_qrcode_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)  # 绑定的默认收款码
+    remark: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    applied_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    approved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+
+class AgentCommission(Base):
+    """代理佣金明细记录"""
+    __tablename__ = "agent_commissions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    agent_id: Mapped[int] = mapped_column(ForeignKey("agents.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))   # 充值用户
+    recharge_amount: Mapped[float] = mapped_column(Float)           # 充值金额
+    commission_amount: Mapped[float] = mapped_column(Float)         # 代理获得佣金（80%）
+    platform_amount: Mapped[float] = mapped_column(Float)           # 平台获得金额（20%）
+    source: Mapped[str] = mapped_column(String(50), default="recharge")  # recharge
+    remark: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class WithdrawalStatus(str, enum.Enum):
+    pending = "pending"        # 待处理（管理员待打款）
+    completed = "completed"    # 已完成（管理员已打款）
+    rejected = "rejected"      # 已拒绝
+
+
+class AgentWithdrawal(Base):
+    """代理提现申请 — 代理申请将佣金提现到微信/支付宝，管理员手动打款后标记完成"""
+    __tablename__ = "agent_withdrawals"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    agent_id: Mapped[int] = mapped_column(ForeignKey("agents.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    amount: Mapped[float] = mapped_column(Float)                    # 申请提现金额
+    pay_method: Mapped[str] = mapped_column(String(20))             # wechat / alipay
+    pay_account: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)  # 收款账号/备注（已弃用，改用 qrcode_path）
+    qrcode_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)  # 收款码图片路径
+    status: Mapped[WithdrawalStatus] = mapped_column(Enum(WithdrawalStatus), default=WithdrawalStatus.pending)
+    remark: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)        # 管理员备注
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    processed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    processor_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)      # 处理管理员ID
+
+
+class NotificationType(str, enum.Enum):
+    commission_earned = "commission_earned"           # 佣金到账（通知代理）
+    withdrawal_completed = "withdrawal_completed"     # 提现已打款（通知代理）
+    withdrawal_rejected = "withdrawal_rejected"       # 提现已拒绝（通知代理）
+    agent_approved = "agent_approved"                 # 代理审批通过（通知用户）
+    agent_rejected = "agent_rejected"                 # 代理审批拒绝（通知用户）
+    new_withdrawal = "new_withdrawal"                 # 新提现申请（通知管理员）
+    new_agent_apply = "new_agent_apply"               # 新代理申请（通知管理员）
+    new_recharge_order = "new_recharge_order"         # 新充值订单待审核（通知管理员）
+
+
+class Notification(Base):
+    """消息通知表"""
+    __tablename__ = "notifications"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)  # 接收者
+    type: Mapped[NotificationType] = mapped_column(Enum(NotificationType))
+    title: Mapped[str] = mapped_column(String(100))
+    message: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    is_read: Mapped[bool] = mapped_column(Boolean, default=False)
+    related_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # 关联业务 ID
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
 class RechargeOrderStatus(str, enum.Enum):
-    pending = "pending"
-    paid = "paid"
-    cancelled = "cancelled"
+    pending = "pending"          # 已创建，等待用户支付
+    submitted = "submitted"      # 用户已提交支付凭证，等待管理员审核
+    paid = "paid"                # 管理员已确认到账
+    cancelled = "cancelled"      # 已取消/已拒绝
 
 
 class RechargeOrder(Base):
@@ -166,5 +258,18 @@ class RechargeOrder(Base):
     status: Mapped[RechargeOrderStatus] = mapped_column(
         Enum(RechargeOrderStatus), default=RechargeOrderStatus.pending
     )
+    processor_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # 审核管理员ID
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     paid_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    processed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+
+class PlatformQrcode(Base):
+    """平台收款码表 — 每个 (pay_method, amount) 组合一张收款码"""
+    __tablename__ = "platform_qrcodes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    pay_method: Mapped[str] = mapped_column(String(20))      # wechat / alipay
+    amount: Mapped[float] = mapped_column(Float)             # 固定金额（元）
+    qrcode_path: Mapped[str] = mapped_column(String(500))    # 图片路径
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())

@@ -27,6 +27,8 @@
       <label>用户名</label><input type="text" name="username" required minlength="3" maxlength="50" autocomplete="username">
       <label>密码</label><input type="password" name="password" required minlength="6" autocomplete="new-password">
       <label>确认密码</label><input type="password" name="confirm_password" required minlength="6" autocomplete="new-password">
+      <label>邀请码 <span style="color:var(--muted);font-weight:400;font-size:.8rem">（选填，有代理邀请时填写）</span></label>
+      <input type="text" name="invite_code" maxlength="20" placeholder="填写代理邀请码（可选）" autocomplete="off">
       <label class="checkbox-label">
         <input type="checkbox" name="agreed_terms" required>
         <span>我已阅读并同意 <a href="/terms" target="_blank">《用户注册协议》</a> 和 <a href="/privacy" target="_blank">《隐私政策》</a></span>
@@ -74,9 +76,15 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
           使用记录
         </button>
+        <button class="sidebar-item" data-tab="agent" onclick="switchTab('agent', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          代理中心
+        </button>
       </nav>
       <div class="sidebar-footer">
-        <button id="logout-btn" class="btn btn-outline" style="display:none">退出登录</button>
+        <div class="sidebar-footer-content">
+          <button id="logout-btn" class="btn btn-outline" style="display:none">退出</button>
+        </div>
       </div>
     </aside>
 
@@ -173,19 +181,18 @@
               <button id="pay-wechat" class="btn btn-primary btn-sm" onclick="selectPayMethod('wechat')" style="flex:1">💚 微信支付</button>
               <button id="pay-alipay" class="btn btn-outline btn-sm" onclick="selectPayMethod('alipay')" style="flex:1">💙 支付宝</button>
             </div>
-            <div class="redeem-row" style="margin-bottom:12px">
-              <label style="white-space:nowrap;line-height:40px;margin-right:8px">充值金额</label>
-              <input id="scan-amount" type="number" step="0.01" min="0.01" value="10" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);" placeholder="输入金额，如 10">
-              <span style="line-height:40px;margin-left:4px">元</span>
+            <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">选择充值金额（固定面额，扫码即锁定金额）</p>
+            <div class="amount-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+              <button class="amount-btn" data-amount="2" onclick="selectScanAmount(2)">¥2</button>
+              <button class="amount-btn" data-amount="5" onclick="selectScanAmount(5)">¥5</button>
+              <button class="amount-btn" data-amount="10" onclick="selectScanAmount(10)">¥10</button>
+              <button class="amount-btn" data-amount="20" onclick="selectScanAmount(20)">¥20</button>
+              <button class="amount-btn" data-amount="50" onclick="selectScanAmount(50)">¥50</button>
+              <button class="amount-btn" data-amount="100" onclick="selectScanAmount(100)">¥100</button>
+              <button class="amount-btn" data-amount="500" onclick="selectScanAmount(500)">¥500</button>
             </div>
-            <div class="quick-amounts" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-              <button class="btn btn-outline btn-sm" onclick="setScanAmount(5)">¥5</button>
-              <button class="btn btn-outline btn-sm" onclick="setScanAmount(10)">¥10</button>
-              <button class="btn btn-outline btn-sm" onclick="setScanAmount(20)">¥20</button>
-              <button class="btn btn-outline btn-sm" onclick="setScanAmount(50)">¥50</button>
-              <button class="btn btn-outline btn-sm" onclick="setScanAmount(100)">¥100</button>
-            </div>
-            <button id="create-order-btn" class="btn btn-primary btn-block" style="margin-bottom:12px">生成支付二维码</button>
+            <input type="hidden" id="scan-amount" value="">
+            <button id="create-order-btn" class="btn btn-primary btn-block" style="margin-bottom:12px" disabled>请先选择充值金额</button>
           </div>
 
           <!-- 兑换码充值面板 -->
@@ -350,6 +357,198 @@
         </div>
       </div>
 
+      <!-- ====== 代理中心标签页 ====== -->
+      <div class="tab-pane" id="pane-agent">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          代理中心
+        </div>
+
+        <!-- 未申请 / 申请中 / 已通过，三种状态动态渲染 -->
+        <div id="agent-no-apply" class="card section-card" style="display:none">
+          <h3>成为平台代理，轻松赚取推广佣金</h3>
+          <div class="guide-steps-visual" style="margin:16px 0">
+            <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>提交申请</strong><p>填写申请说明，等待管理员审核（通常 1 小时内处理）</p></div></div>
+            <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>获得专属邀请码</strong><p>审核通过后，系统自动生成您的专属邀请链接</p></div></div>
+            <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>推广并赚取佣金</strong><p>通过邀请码注册的用户每次充值，您可获得相应佣金</p></div></div>
+          </div>
+          <div style="margin-bottom:12px">
+            <label style="display:block;margin-bottom:6px;font-size:.9rem;color:var(--muted)">申请说明（可选）</label>
+            <textarea id="agent-apply-remark" rows="3" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);resize:vertical;font-size:.9rem" placeholder="简单介绍一下您的推广渠道或方式..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="applyAgent()">提交代理申请</button>
+          <p id="agent-apply-msg" class="msg" style="margin-top:8px"></p>
+        </div>
+
+        <div id="agent-pending" class="card section-card" style="display:none">
+          <div style="text-align:center;padding:32px 0">
+            <div style="font-size:3rem;margin-bottom:16px">⏳</div>
+            <h3 style="color:var(--warning, #f59e0b)">代理申请审核中</h3>
+            <p style="color:var(--muted);margin-top:8px">您的申请已提交，请耐心等待管理员审批（通常 1 小时内）</p>
+          </div>
+        </div>
+
+        <div id="agent-rejected" class="card section-card" style="display:none">
+          <div style="text-align:center;padding:32px 0">
+            <div style="font-size:3rem;margin-bottom:16px">❌</div>
+            <h3 style="color:var(--danger)">代理申请未通过</h3>
+            <p style="color:var(--muted);margin-top:8px">如有疑问请联系平台客服</p>
+          </div>
+        </div>
+
+        <div id="agent-disabled" class="card section-card" style="display:none">
+          <div style="text-align:center;padding:32px 0">
+            <div style="font-size:3rem;margin-bottom:16px">🚫</div>
+            <h3 style="color:var(--danger)">代理资格已暂停</h3>
+            <p style="color:var(--muted);margin-top:8px">请联系平台客服了解详情</p>
+          </div>
+        </div>
+
+        <div id="agent-approved" style="display:none">
+          <!-- 佣金统计 -->
+          <div class="stats-row" style="margin-bottom:20px">
+            <div class="card stat" style="flex:1">
+              <span class="stat-label">可提现佣金</span>
+              <span class="stat-value" id="agent-available" style="color:#22c55e">--</span>
+            </div>
+            <div class="card stat" style="flex:1">
+              <span class="stat-label">累计佣金</span>
+              <span class="stat-value" id="agent-total">--</span>
+            </div>
+          </div>
+
+          <!-- 绑定默认收款码 -->
+          <div class="card section-card" id="bind-qrcode-card">
+            <h3>📌 绑定收款码（一键提现）</h3>
+            <p class="section-desc" style="text-align:left;margin-bottom:12px;color:var(--muted)">
+              上传并绑定一张收款码后，每次提现将默认使用该收款码，无需重复上传。
+            </p>
+            <div id="bound-qrcode-display" style="display:none;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <img id="bound-qrcode-img" src="" style="max-width:120px;max-height:120px;border-radius:8px;border:2px solid var(--border);cursor:pointer" onclick="showQrModal(document.getElementById('bound-qrcode-img').src)" title="点击查看大图" />
+                <div>
+                  <p style="color:#22c55e;font-size:.9rem;margin-bottom:4px">✅ 已绑定收款码</p>
+                  <p style="color:var(--muted);font-size:.8rem">提现时将默认使用此收款码</p>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn btn-outline btn-sm" onclick="startRebindQrcode()">更换收款码</button>
+              </div>
+            </div>
+            <div id="bind-qrcode-upload" style="display:none">
+              <div id="bind-qrcode-upload-area" style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s"
+                   onclick="document.getElementById('bind-qrcode-file-input').click()"
+                   onmouseenter="this.style.borderColor='var(--primary)'"
+                   onmouseleave="this.style.borderColor='var(--border)'">
+                <div id="bind-qrcode-placeholder" style="color:var(--muted);font-size:.9rem">
+                  <span style="font-size:2rem;display:block;margin-bottom:8px">📷</span>
+                  点击上传收款码<br><span style="font-size:.75rem">支持 PNG / JPG / GIF / WebP，不超过 2MB</span>
+                </div>
+                <img id="bind-qrcode-preview" src="" style="display:none;max-width:200px;max-height:200px;margin:0 auto;border-radius:8px" />
+                <input type="file" id="bind-qrcode-file-input" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" style="display:none" onchange="handleBindQrcodeUpload(event)" />
+              </div>
+              <p id="bind-qrcode-msg" style="margin-top:4px;font-size:.8rem;color:var(--muted)"></p>
+              <button id="bind-qrcode-confirm-btn" class="btn btn-primary" style="width:100%;margin-top:8px;display:none" onclick="confirmBindQrcode()">确认绑定此收款码</button>
+            </div>
+          </div>
+
+          <!-- 邀请码/链接 -->
+          <div class="card section-card">
+            <h3>我的专属邀请码</h3>
+            <div class="connect-fields" style="margin-top:12px">
+              <div class="connect-field">
+                <span class="field-label">邀请码</span>
+                <div class="field-row">
+                  <code class="field-value" id="agent-invite-code">--</code>
+                  <button class="btn btn-outline btn-sm" onclick="copyField('agent-invite-code', this)">复制</button>
+                </div>
+                <p class="field-hint">将此邀请码分享给潜在用户，对方注册时填写即可绑定到您名下</p>
+              </div>
+              <div class="connect-field">
+                <span class="field-label">专属注册链接</span>
+                <div class="field-row">
+                  <code class="field-value" id="agent-invite-link">--</code>
+                  <button class="btn btn-outline btn-sm" onclick="copyField('agent-invite-link', this)">复制链接</button>
+                </div>
+                <p class="field-hint">直接分享此链接，对方点击后自动填入邀请码</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 提现 -->
+          <div class="card section-card">
+            <h3>佣金提现</h3>
+            <p class="section-desc" style="text-align:left;margin-bottom:16px;color:var(--muted)">提现至本人微信/支付宝，约 <strong style="color:var(--primary)">1 小时</strong>内到账。</p>
+            <div style="display:grid;gap:12px;margin-bottom:12px">
+              <!-- 收款方式 -->
+              <div>
+                <label style="display:block;margin-bottom:6px;font-size:.875rem;color:var(--muted)">收款方式</label>
+                <div style="display:flex;gap:8px">
+                  <button id="wd-pay-wechat" class="btn btn-outline btn-sm" onclick="selectWdPay('wechat')" style="flex:1;padding:8px 0">
+                    💚 微信
+                  </button>
+                  <button id="wd-pay-alipay" class="btn btn-outline btn-sm" onclick="selectWdPay('alipay')" style="flex:1;padding:8px 0">
+                    💙 支付宝
+                  </button>
+                </div>
+              </div>
+              <!-- 收款码上传（默认隐藏，选择"重新上传"时显示） -->
+              <div id="qrcode-upload-section" style="display:none">
+                <label style="display:block;margin-bottom:6px;font-size:.875rem;color:var(--muted)">收款码 <span style="font-weight:400;font-size:.8rem">（上传微信/支付宝收款二维码，管理员凭此打款）</span></label>
+                <div id="qrcode-upload-area" style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s"
+                     onclick="document.getElementById('qrcode-file-input').click()"
+                     onmouseenter="this.style.borderColor='var(--primary)'"
+                     onmouseleave="this.style.borderColor='var(--border)'">
+                  <div id="qrcode-placeholder" style="color:var(--muted);font-size:.9rem">
+                    <span style="font-size:2rem;display:block;margin-bottom:8px">📷</span>
+                    点击上传收款码<br><span style="font-size:.75rem">支持 PNG / JPG / GIF / WebP，不超过 2MB</span>
+                  </div>
+                  <img id="qrcode-preview" src="" style="display:none;max-width:200px;max-height:200px;margin:0 auto;border-radius:8px" />
+                  <input type="file" id="qrcode-file-input" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" style="display:none" onchange="handleQrcodeUpload(event)" />
+                </div>
+                <p id="qrcode-msg" style="margin-top:4px;font-size:.8rem;color:var(--muted)">未上传收款码</p>
+              </div>
+              <!-- 提现金额 -->
+              <div>
+                <label style="display:block;margin-bottom:6px;font-size:.875rem;color:var(--muted)">提现金额（元）</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input id="withdraw-amount" type="number" step="1" min="1" placeholder="0"
+                    style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);">
+                  <button class="btn btn-outline btn-sm" onclick="withdrawAll()" style="white-space:nowrap">全部提现</button>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="agentWithdraw()">提交提现申请</button>
+            <p id="withdraw-msg" class="msg" style="margin-top:8px"></p>
+          </div>
+
+          <!-- 提现记录 -->
+          <div class="card section-card">
+            <div class="section-header">
+              <h3>提现记录</h3>
+              <button class="btn btn-outline btn-sm" onclick="loadWithdrawalHistory()">刷新</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>时间</th><th>金额</th><th>收款方式</th><th>状态</th><th>备注</th></tr></thead>
+                <tbody id="withdrawal-history-body"><tr><td colspan="5" style="color:var(--muted)">加载中...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 佣金明细 -->
+          <div class="card section-card">
+            <h3>佣金明细</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>时间</th><th>我的佣金</th><th>类型</th><th>备注</th></tr></thead>
+                <tbody id="agent-commissions-body"><tr><td colspan="4" style="color:var(--muted)">加载中...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -358,19 +557,78 @@
     <div class="payment-content">
       <h4 style="text-align:center;margin-bottom:8px">扫码支付</h4>
       <p style="text-align:center;color:var(--muted);margin-bottom:16px" id="payment-info"></p>
-      <div class="qr-placeholder">
-        <div class="qr-inner">
-          <span style="font-size:4rem">📱</span>
-          <p style="color:var(--muted);margin-top:8px" id="qr-amount-display"></p>
-          <p style="font-size:.75rem;color:var(--muted)">请使用对应 App 扫描支付</p>
-          <p style="font-size:.7rem;color:var(--primary)" id="qr-order-no"></p>
+      <div class="qr-placeholder" style="text-align:center">
+        <img id="qr-code-image" src="" alt="收款码" style="max-width:220px;max-height:220px;border-radius:8px;display:none">
+        <div id="qr-no-image" style="padding:40px;color:var(--muted)">
+          <span style="font-size:3rem">📱</span>
+          <p style="margin-top:8px">收款码加载中...</p>
         </div>
+        <p style="font-size:1.2rem;font-weight:700;color:var(--primary);margin-top:8px" id="qr-amount-display"></p>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:4px" id="qr-order-no"></p>
+        <p style="font-size:.75rem;color:var(--warning,#f59e0b);margin-top:12px;line-height:1.5">
+          ⚠️ 金额已由收款码锁定，扫码后<br>请确认支付金额一致后完成支付
+        </p>
       </div>
       <p id="pay-error-msg" style="color:var(--danger);font-size:.85rem;text-align:center;margin-top:8px;min-height:1.2em"></p>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn btn-outline btn-block" onclick="closePaymentModal()">取消支付</button>
         <button class="btn btn-primary btn-block" id="confirm-pay-btn" onclick="confirmPayment()">✅ 我已支付完成</button>
       </div>
+      <p style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:8px">
+        支付完成后需等待管理员审核到账
+      </p>
+    </div>
+  </div>
+
+  <!-- 提现确认弹窗（选择收款码方式） -->
+  <div id="withdraw-confirm-modal" class="payment-modal" style="display:none">
+    <div class="payment-content" style="max-width:420px">
+      <h4 style="text-align:center;margin-bottom:8px">选择收款码</h4>
+      <p style="text-align:center;color:var(--muted);margin-bottom:16px">
+        您已绑定默认收款码，是否使用？
+      </p>
+      <div id="wd-confirm-qrcode-preview" style="text-align:center;margin-bottom:12px">
+        <img id="wd-confirm-qrcode-img" src="" style="max-width:180px;max-height:180px;border-radius:8px;border:2px solid var(--border)" />
+      </div>
+      <p style="text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:16px">
+        提现金额：<strong style="color:#22c55e" id="wd-confirm-amount"></strong>
+        &nbsp;·&nbsp;收款方式：<strong id="wd-confirm-method"></strong>
+      </p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary btn-block" onclick="confirmWithdrawWithBound()">
+          ✅ 使用已绑定收款码
+        </button>
+        <button class="btn btn-outline btn-block" onclick="startNewQrcodeUpload()">
+          📷 重新上传收款码
+        </button>
+        <button class="btn btn-outline btn-block" style="color:var(--muted)" onclick="closeWithdrawConfirmModal()">
+          取消
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 浮动铃铛（可拖拽，登录后显示） -->
+  <div class="floating-bell" id="floating-bell" style="display:none" title="消息通知（可拖拽）">
+    <button class="notify-bell" id="notify-bell" onclick="toggleNotifyFloat(event)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </button>
+    <span class="notify-badge" id="notify-badge">0</span>
+  </div>
+
+  <!-- 浮动消息面板（可拖拽） -->
+  <div class="notify-float" id="notify-float">
+    <div class="notify-float-header" id="notify-float-header">
+      <span class="notify-float-title">消息通知</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-xs btn-outline" onclick="markAllNotificationsRead(event)">全部已读</button>
+        <button class="notify-float-close" onclick="closeNotifyFloat(event)" title="关闭">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="notify-float-body" id="notify-list">
+      <div class="notify-empty">暂无消息</div>
     </div>
   </div>
 

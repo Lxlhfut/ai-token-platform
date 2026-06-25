@@ -5,7 +5,8 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import ModelPricing, Transaction, TransactionType, User
+from app.models import Agent, AgentCommission, AgentStatus, ModelPricing, Transaction, TransactionType, User
+from app.routers.notifications import create_notification
 
 
 async def get_model_pricing(db: AsyncSession, model: str) -> Optional[ModelPricing]:
@@ -83,7 +84,9 @@ async def recharge_balance(
     user: User,
     amount: float,
     remark: Optional[str] = None,
+    trigger_commission: bool = True,
 ) -> User:
+    """给用户充值。若用户绑定了代理，自动给代理分配佣金（默认80%）。"""
     user.balance = round(user.balance + amount, 6)
     tx = Transaction(
         user_id=user.id,
@@ -93,6 +96,39 @@ async def recharge_balance(
         remark=remark or "管理员充值",
     )
     db.add(tx)
+
+    # ===== 代理佣金分成 =====
+    if trigger_commission and user.referrer_agent_id:
+        agent_res = await db.execute(
+            select(Agent).where(
+                Agent.id == user.referrer_agent_id,
+                Agent.status == AgentStatus.approved,
+            )
+        )
+        agent = agent_res.scalar_one_or_none()
+        if agent:
+            commission_amount = round(amount * agent.commission_rate, 6)
+            platform_amount = round(amount - commission_amount, 6)
+            agent.available_commission = round(agent.available_commission + commission_amount, 6)
+            agent.total_commission = round(agent.total_commission + commission_amount, 6)
+            comm_record = AgentCommission(
+                agent_id=agent.id,
+                user_id=user.id,
+                recharge_amount=amount,
+                commission_amount=commission_amount,
+                platform_amount=platform_amount,
+                source="recharge",
+                remark=remark or f"用户 #{user.id} 充值分成",
+            )
+            db.add(comm_record)
+
+            # 通知代理：佣金到账
+            await create_notification(
+                db, agent.user_id, "commission_earned",
+                f"您获得佣金 ¥{commission_amount:.4f}",
+            )
+
     await db.commit()
     await db.refresh(user)
     return user
+

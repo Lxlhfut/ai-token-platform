@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,14 +13,17 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 
 from app.config import get_settings
-
+from app.database import get_db
 from app.init_db import init_db
-
-from app.routers import admin, proxy, user
+from app.models import PlatformQrcode
+from app.routers import admin, notifications, proxy, user
+from app.schemas import PlatformQrcodeOut
 
 
 
@@ -72,6 +75,8 @@ app.include_router(proxy.router)
 app.include_router(user.router)
 
 app.include_router(admin.router)
+
+app.include_router(notifications.router)
 
 
 
@@ -142,6 +147,19 @@ async def public_config():
         "api_base_url": "/v1",
 
     }
+
+
+@app.get("/api/platform-qrcodes", response_model=list[PlatformQrcodeOut])
+async def public_platform_qrcodes(db: AsyncSession = Depends(get_db)):
+    """获取所有平台收款码（公开，供用户支付弹窗使用）"""
+    result = await db.execute(
+        select(PlatformQrcode).order_by(PlatformQrcode.pay_method, PlatformQrcode.amount)
+    )
+    records = result.scalars().all()
+    return [
+        PlatformQrcodeOut(pay_method=r.pay_method, amount=r.amount, qrcode_path=r.qrcode_path)
+        for r in records
+    ]
 
 
 # ======= 协议页面 =======

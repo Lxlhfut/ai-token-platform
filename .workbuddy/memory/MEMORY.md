@@ -39,11 +39,47 @@
 - 上游返回 `reasoning_content` 字段存放推理过程，content 是最终回答
 
 ### 关键文件
-- `app/models.py` - 数据库模型（User, ApiKey, RedeemCode, UpstreamChannel, ModelPricing, UsageLog, Transaction）
-- `app/routers/user.py` - 用户 API（用户名注册/登录/key 管理/兑换码充值）
-- `app/routers/admin.py` - 管理 API（渠道/定价/用户/兑换码生成）
+- `app/models.py` - 数据库模型（User, ApiKey, RedeemCode, UpstreamChannel, ModelPricing, UsageLog, Transaction, Agent, AgentCommission）
+- `app/routers/user.py` - 用户 API（注册/登录/key 管理/兑换码充值/代理申请与提现）
+- `app/routers/admin.py` - 管理 API（渠道/定价/用户/兑换码生成/代理管理）
 - `app/routers/proxy.py` - OpenAI + Anthropic 双协议代理
 - `app/services/anthropic_adapter.py` - Anthropic ↔ OpenAI 格式双向转换
-- `app/static/app.js` - 前端全部交互逻辑（含 sendSmsCode 倒计时）
+- `app/services/billing.py` - 计费服务（充值时自动触发代理佣金分成）
+- `app/static/app.js` - 前端全部交互逻辑
 - `app/templates/terms.html` - 用户注册协议页面
 - `app/templates/privacy.html` - 隐私政策页面
+
+### 代理系统（2026-06-25 新增/更新）
+- **新表**：`agents`（代理信息）、`agent_commissions`（佣金明细）、`agent_withdrawals`（提现申请）
+- **User 新增字段**：`referrer_agent_id`（逻辑外键，记录邀请注册的代理ID）
+- **佣金比例**：被邀请用户每次充值，代理获得 80%，平台获得 20%
+- **提现方式**：代理申请提现到本人微信/支付宝，需上传收款码图片（PNG/JPG，≤2MB）；管理员通过收款码手动打款后在后台点「已打款」确认；拒绝时冻结佣金自动退回
+- **用户端 API**：
+  - `POST /api/user/agent/apply` — 申请成为代理
+  - `GET /api/user/agent/info` — 获取代理信息（邀请码、佣金统计）
+  - `GET /api/user/agent/commissions` — 佣金明细（只显示我的佣金，不显示充值金额）
+  - `POST /api/user/agent/withdraw` — 提交提现申请（预扣佣金冻结，等管理员打款）
+  - `GET /api/user/agent/withdrawals` — 提现历史
+- **管理端 API**：
+  - `GET /api/admin/agents` — 代理列表
+  - `POST /api/admin/agents/{id}/approve` — 审批通过（自动生成邀请码）
+  - `POST /api/admin/agents/{id}/reject` — 拒绝
+  - `POST /api/admin/agents/{id}/disable` — 禁用/恢复切换
+  - `GET /api/admin/agents/{id}/commissions` — 代理佣金明细
+  - `GET /api/admin/agent-withdrawals` — 所有提现申请
+  - `POST /api/admin/agent-withdrawals/{id}/complete` — 确认已打款
+  - `POST /api/admin/agent-withdrawals/{id}/reject` — 拒绝（退回佣金）
+- **注册邀请码**：注册表单有可选邀请码字段；URL 参数 `?ref=CODE` 自动填入
+- **数据库迁移**：`init_db.py` 中 `_run_migrations` 自动给 users 表添加 referrer_agent_id 列；agent_withdrawals 由 create_all 自动创建
+- **循环外键处理**：referrer_agent_id 使用普通 Integer 列（不用 ForeignKey），避免 SQLite create_all 循环依赖
+
+### 固定金额扫码充值 + 管理员审核（2026-06-25 新增）
+**方案**：用户选择固定面额（2/5/10/20/50/100/500）→ 展示对应收款码 → 扫码支付 → 管理员核对账单后确认到账。无需微信/支付宝 API，用个人 app 生成固定金额收款码即可。
+
+- **订单状态**：`pending`（已创建）→ `submitted`（用户已提交，待审核）→ `paid`（管理员确认到账）/ `cancelled`（拒绝）
+- **平台收款码**：`platform_qrcodes` 表，每个 (pay_method, amount) 对应一张收款码图片
+- **关键接口**：
+  - `POST /api/admin/platform-qrcode` — 上传收款码（Form: pay_method + amount + file）
+  - `POST /api/admin/recharge-orders/{id}/verify` — 审核订单（approve/reject，approve 自动调用 recharge_balance）
+  - `GET /api/platform-qrcodes` — 公开接口，用户端获取收款码
+- **管理员通知**：`new_recharge_order` 类型，点击跳转到订单页审核

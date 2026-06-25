@@ -60,9 +60,19 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h8"/><path d="M8 18h5"/></svg>
           订单/用量
         </button>
+        <button class="sidebar-item" data-tab="platform-qrcodes" onclick="switchTab('platform-qrcodes', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h6v6H4z"/><path d="M14 4h6v6h-6z"/><path d="M4 14h6v6H4z"/><path d="M17 17v.01"/><path d="M14 14h6v6h-6z"/></svg>
+          收款码
+        </button>
+        <button class="sidebar-item" data-tab="agents" onclick="switchTab('agents', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          代理管理
+        </button>
       </nav>
       <div class="sidebar-footer">
-        <button id="admin-logout" class="btn btn-outline" style="display:none">退出管理</button>
+        <div class="sidebar-footer-content">
+          <button id="admin-logout" class="btn btn-outline" style="display:none">退出</button>
+        </div>
       </div>
     </aside>
 
@@ -155,7 +165,7 @@
           <h3>充值订单</h3>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>订单号</th><th>用户ID</th><th>金额</th><th>支付方式</th><th>状态</th><th>创建时间</th></tr></thead>
+              <thead><tr><th>订单号</th><th>用户ID</th><th>金额</th><th>支付方式</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
               <tbody id="orders-body"></tbody>
             </table>
           </div>
@@ -167,6 +177,90 @@
             <table>
               <thead><tr><th>时间</th><th>用户</th><th>模型</th><th>Tokens</th><th>费用</th><th>状态</th></tr></thead>
               <tbody id="admin-usage-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 收款码管理标签页 ====== -->
+      <div class="tab-pane" id="pane-platform-qrcodes">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h6v6H4z"/><path d="M14 4h6v6h-6z"/><path d="M4 14h6v6H4z"/><path d="M14 14h6v6h-6z"/></svg>
+          平台收款码管理
+        </div>
+        <p style="color:var(--muted);margin-bottom:16px;font-size:.85rem">
+          上传各面额的微信/支付宝固定金额收款码。用户选择面额后，系统自动展示对应收款码，确保金额一致。
+        </p>
+        <div id="qrcode-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+          <!-- JS 动态渲染 -->
+        </div>
+      </div>
+
+      <!-- ====== 代理管理标签页 ====== -->
+      <div class="tab-pane" id="pane-agents">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          代理管理
+        </div>
+
+        <div class="stats-row" style="margin-bottom:20px">
+          <div class="card stat" style="flex:1"><span class="stat-label">总代理数</span><span class="stat-value" id="agent-total-count">--</span></div>
+          <div class="card stat" style="flex:1"><span class="stat-label">待审批</span><span class="stat-value" id="agent-pending-count" style="color:var(--warning,#f59e0b)">--</span></div>
+          <div class="card stat" style="flex:1"><span class="stat-label">活跃代理</span><span class="stat-value" id="agent-active-count" style="color:#22c55e">--</span></div>
+          <div class="card stat" style="flex:1"><span class="stat-label">佣金总额</span><span class="stat-value" id="agent-total-commission">--</span></div>
+        </div>
+
+        <div class="card section-card">
+          <div class="section-header">
+            <h3>代理申请列表</h3>
+            <button class="btn btn-outline btn-sm" onclick="loadAgents()">刷新</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th><th>用户名</th><th>邀请码</th><th>状态</th>
+                  <th>佣金比例</th><th>累计佣金</th><th>可提现</th>
+                  <th>申请时间</th><th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="agents-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 佣金明细抽屉（点击某代理后展开） -->
+        <div id="agent-detail-panel" class="card section-card" style="display:none">
+          <div class="section-header">
+            <h3 id="agent-detail-title">代理佣金明细</h3>
+            <button class="btn btn-outline btn-sm" onclick="closeAgentDetail()">关闭</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>时间</th><th>充值用户</th><th>充值金额</th><th>代理佣金</th><th>平台收益</th><th>类型</th><th>备注</th></tr></thead>
+              <tbody id="agent-detail-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 提现申请管理 -->
+        <div class="card section-card" style="margin-top:0">
+          <div class="section-header">
+            <h3>提现申请管理</h3>
+            <button class="btn btn-outline btn-sm" onclick="loadWithdrawals()">刷新</button>
+          </div>
+          <p style="font-size:.875rem;color:var(--muted);margin-bottom:12px">
+            代理提交提现申请后，您需手动在微信/支付宝向代理打款，完成后点击「已打款」。若需拒绝请点击「拒绝」，冻结的佣金将自动退回。
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th><th>代理用户名</th><th>金额</th><th>收款方式</th><th>收款码</th>
+                  <th>状态</th><th>申请时间</th><th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawals-body"><tr><td colspan="8" style="color:var(--muted)">加载中...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -184,6 +278,30 @@
         <button class="btn btn-outline" onclick="closeModal()">取消</button>
         <button class="btn btn-primary" id="modal-submit">确认</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 浮动铃铛（可拖拽，登录后显示） -->
+  <div class="floating-bell" id="floating-bell" style="display:none" title="消息通知（可拖拽）">
+    <button class="notify-bell" id="notify-bell" onclick="toggleNotifyFloat(event)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </button>
+    <span class="notify-badge" id="notify-badge">0</span>
+  </div>
+
+  <!-- 浮动消息面板（可拖拽） -->
+  <div class="notify-float" id="notify-float">
+    <div class="notify-float-header" id="notify-float-header">
+      <span class="notify-float-title">消息通知</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-xs btn-outline" onclick="markAllNotificationsRead(event)">全部已读</button>
+        <button class="notify-float-close" onclick="closeNotifyFloat(event)" title="关闭">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="notify-float-body" id="notify-list">
+      <div class="notify-empty">暂无消息</div>
     </div>
   </div>
 
