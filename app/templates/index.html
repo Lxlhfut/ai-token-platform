@@ -60,11 +60,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="sk-你的平台APIKey",
-<<<<<<< HEAD
     base_url="https://ylxunlapi.top/v1"
-=======
-    base_url="https://你的域名.com/v1"
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 )
 
 response = client.chat.completions.create(
@@ -88,7 +84,6 @@ curl https://你的域名.com/v1/chat/completions \
     </div>
   </section>
 
-<<<<<<< HEAD
   <!-- 浮空联系客服 -->
   <button class="cs-float" id="csFloat" title="联系客服" onclick="toggleCsPopup()">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
@@ -116,13 +111,30 @@ curl https://你的域名.com/v1/chat/completions \
       <br class="footer-br">
       <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="beian-link">琼ICP备2026009208号</a>
     </div>
-=======
-  <footer class="footer">
-    <div class="container">© 2026 {{ platform_name }} · 仅供学习与技术交流</div>
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
   </footer>
 
   <script>
+    // 浮空客服
+    function toggleCsPopup() {
+      var popup = document.getElementById('csPopup');
+      if (popup) popup.classList.toggle('open');
+    }
+    function copyQQ() {
+      navigator.clipboard.writeText('2195127736').then(function() {
+        var h = document.getElementById('csCopyHint');
+        h.textContent = '已复制';
+        setTimeout(function(){ h.textContent = '复制'; }, 2000);
+      });
+    }
+    // 点击弹窗外关闭
+    document.addEventListener('click', function(e) {
+      var popup = document.getElementById('csPopup');
+      var btn = document.getElementById('csFloat');
+      if (popup && btn && popup.classList.contains('open') && !popup.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+        popup.classList.remove('open');
+      }
+    });
+
     // 从公开接口动态加载定价，始终与后台配置一致
     (async () => {
       const el = document.getElementById('pricing-list');

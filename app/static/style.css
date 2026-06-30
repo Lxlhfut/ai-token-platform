@@ -102,7 +102,6 @@ body{font-family:Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--
 .price-card h4{margin-bottom:8px}
 .price{color:var(--primary-hover);font-size:.9rem}
 .footer{padding:32px 0;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
-<<<<<<< HEAD
 .beian-link{color:var(--muted);text-decoration:none;font-size:.82rem;transition:color .2s}
 .beian-link:hover{color:var(--text)}
 .footer-br{display:none}
@@ -116,10 +115,11 @@ body{font-family:Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--
 .icp-footer span:last-of-type{color:rgba(255,255,255,.2)}
 @media(max-width:768px){.icp-footer{font-size:.75rem;padding:6px 12px}}
 
-=======
+/* 认证面板页面：footer 跟随内容，不固定 */
+.auth-card + .icp-footer{position:static;margin-top:40px}
+
 .page{padding:32px 0 60px}
 
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 /* ========== 认证 ========== */
 .auth-card{max-width:420px;margin:40px auto}
 .auth-card h2{text-align:center;margin-bottom:20px}
@@ -145,7 +145,6 @@ body{font-family:Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--
 .stat-email{font-size:1rem;word-break:break-all}
 .stat-warning{border-color:var(--danger)}
 .stat-warning .stat-value{color:var(--danger)}
-<<<<<<< HEAD
 .key-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#0a0e1a;border-radius:8px;margin-bottom:8px;gap:12px;flex-wrap:wrap}
 .key-item div:first-child{flex:1;min-width:200px}
 .key-item div:last-child{display:flex;gap:6px;flex-shrink:0}
@@ -155,9 +154,6 @@ body{font-family:Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--
 .model-group-content label{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:.82rem;transition:all .15s}
 .model-group-content label:hover{border-color:var(--primary);background:rgba(99,102,241,.08)}
 .model-group-content input[type="checkbox"]{accent-color:var(--primary)}
-=======
-.key-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#0a0e1a;border-radius:8px;margin-bottom:8px;gap:12px}
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 .key-name{display:block;color:var(--muted);font-size:.75rem;margin-bottom:4px}
 .key-value{font-family:monospace;font-size:.85rem;word-break:break-all}
 .table-wrap{overflow-x:auto}
@@ -190,14 +186,12 @@ th{color:var(--muted);font-weight:500}
 .amount-btn.selected{border-color:var(--primary);background:var(--primary);color:#fff;box-shadow:0 0 12px rgba(99,102,241,.3)}
 .amount-btn:disabled{opacity:.4;cursor:not-allowed}
 
-<<<<<<< HEAD
+
 /* 模型定价系列筛选 chips */
 .pricing-chip{padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;font-size:.8rem;transition:all .2s;white-space:nowrap}
 .pricing-chip:hover{border-color:var(--primary);color:var(--primary)}
 .pricing-chip-active{border-color:var(--primary)!important;background:var(--primary)!important;color:#fff!important}
 
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 /* 工具接入教程 */
 .tool-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
 .tool-tab{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:.85rem;transition:all .2s}
@@ -215,10 +209,8 @@ th{color:var(--muted);font-weight:500}
 /* 扫码支付弹窗 */
 .payment-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000}
 .payment-content{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:90%;max-width:380px}
-<<<<<<< HEAD
+
 .payment-content[max-width="520px"],.payment-content[style*="520px"]{max-width:520px}
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 .qr-placeholder{background:rgba(255,255,255,.04);border:2px dashed var(--border);border-radius:12px;padding:32px 24px;text-align:center;min-height:200px;display:flex;align-items:center;justify-content:center}
 .qr-inner{text-align:center}
 .quick-amounts{display:flex;gap:8px;flex-wrap:wrap}
@@ -348,7 +340,6 @@ th{color:var(--muted);font-weight:500}
   display:flex;align-items:center;
 }
 .sidebar-footer-content .btn{flex:1}
-<<<<<<< HEAD
 
 /* ========== 浮空客服按钮 ========== */
 .cs-float{
@@ -402,5 +393,3 @@ th{color:var(--muted);font-weight:500}
   .cs-float-label{display:none}
   .cs-popup{right:12px;bottom:80px;width:260px}
 }
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03

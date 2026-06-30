@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     allow_registration: bool = True
     recharge_notice: str = "使用兑换码（卡密）即可自助充值，在下方「充值余额」框中输入兑换码，充值后余额立即到账，即可按量调用 AI 模型。"
 
-<<<<<<< HEAD
     # 支付宝支付配置
     alipay_app_id: str = ""
     alipay_app_private_key: str = ""
@@ -28,14 +27,10 @@ class Settings(BaseSettings):
     wechat_serial_no: str = ""
     wechat_private_key: str = ""
     wechat_notify_url: str = ""
-
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     class Config:
         env_file = ".env"
         extra = "ignore"
 
-<<<<<<< HEAD
     @property
     def wechat_private_key_pem(self) -> str:
         """将 .env 中以 \n 分隔的私钥还原为真正的 PEM 格式（含真实换行）"""
@@ -50,8 +45,7 @@ class Settings(BaseSettings):
             return key.replace("\\n", "\n")
         return key
 
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
+
 
 @lru_cache
 def get_settings() -> Settings:

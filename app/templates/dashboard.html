@@ -60,13 +60,10 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
           概览
         </button>
-<<<<<<< HEAD
         <button class="sidebar-item" data-tab="pricing" onclick="switchTab('pricing', this)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           模型定价
         </button>
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
         <button class="sidebar-item" data-tab="recharge" onclick="switchTab('recharge', this)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 0 2h-2a2 2 0 0 0 0 4h2a1 1 0 0 1 0 2H5a2 2 0 0 1 0-4h9"/></svg>
           充值
@@ -115,11 +112,7 @@
           <h3>🚀 3 步开始使用</h3>
           <ol class="guide-steps">
             <li><strong>注册账户</strong> → 系统自动生成你的 API Key（无需懂代码）</li>
-<<<<<<< HEAD
             <li><strong>充值余额</strong> → 支付宝或微信在线支付，余额自动到账</li>
-=======
-            <li><strong>充值余额</strong> → 扫码支付或输入兑换码，余额立即到账</li>
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
             <li><strong>填写到软件里</strong> → 复制「Base URL + API Key」，填入 Cursor / Cherry Studio / LobeChat 等即可直接用</li>
           </ol>
           <p class="guide-note" id="recharge-notice"></p>
@@ -149,7 +142,6 @@
           </div>
         </div>
 
-<<<<<<< HEAD
       </div>
 
       <!-- ====== 模型定价标签页 ====== -->
@@ -159,26 +151,20 @@
           模型定价
         </div>
 
-=======
-        <!-- 模型定价 -->
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
         <div class="card section-card">
           <div class="section-header">
             <h3>🤖 模型定价（元/1000 tokens）</h3>
           </div>
-<<<<<<< HEAD
           <p class="section-desc" style="text-align:left;margin-bottom:16px">API 调用时在请求 body 中指定 <code>model</code> 即可，平台按实际使用量计费。</p>
 
           <!-- 工具栏：搜索 + 排序 + 视图切换 -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-            <!-- 搜索框 -->
             <div style="position:relative;flex:1;min-width:180px">
               <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input id="pricing-search" type="text" placeholder="搜索模型名称…" oninput="filterPricing()"
                 style="width:100%;padding:9px 12px 9px 34px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.875rem;box-sizing:border-box;transition:border-color .2s"
                 onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
             </div>
-            <!-- 排序下拉 -->
             <select id="pricing-sort" onchange="filterPricing()"
               style="padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.875rem;cursor:pointer;min-width:150px">
               <option value="">默认排序</option>
@@ -190,7 +176,6 @@
               <option value="discount_desc">折扣 高 → 低</option>
               <option value="name_asc">名称 A → Z</option>
             </select>
-            <!-- 视图切换 -->
             <div style="display:flex;gap:4px;border:1px solid var(--border);border-radius:8px;overflow:hidden">
               <button id="pricing-view-table" class="btn" onclick="switchPricingView('table')" title="表格视图"
                 style="padding:7px 11px;border-radius:0;border:none;background:var(--primary);color:#fff">
@@ -203,32 +188,18 @@
             </div>
           </div>
 
-          <!-- 系列筛选 Chips -->
           <div id="pricing-series-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
-
-          <!-- 结果统计 -->
           <div id="pricing-stat" style="font-size:.8rem;color:var(--muted);margin-bottom:10px"></div>
 
-          <!-- 表格视图 -->
           <div id="pricing-table-view" class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th style="cursor:pointer;user-select:none" onclick="setPricingSort('name')">
-                    模型 <span id="sort-icon-name" style="font-size:.75rem">↕</span>
-                  </th>
-                  <th style="cursor:pointer;user-select:none;text-align:right" onclick="setPricingSort('input_asc')">
-                    官方输入价 <span id="sort-icon-oin" style="font-size:.75rem">↕</span>
-                  </th>
-                  <th style="cursor:pointer;user-select:none;text-align:right" onclick="setPricingSort('output_asc')">
-                    官方输出价 <span id="sort-icon-oout" style="font-size:.75rem">↕</span>
-                  </th>
-                  <th style="cursor:pointer;user-select:none;text-align:right;color:#22c55e" onclick="setPricingSort('input_asc')">
-                    本站输入价 <span id="sort-icon-in" style="font-size:.75rem">↕</span>
-                  </th>
-                  <th style="cursor:pointer;user-select:none;text-align:right;color:#22c55e" onclick="setPricingSort('output_asc')">
-                    本站输出价 <span id="sort-icon-out" style="font-size:.75rem">↕</span>
-                  </th>
+                  <th style="cursor:pointer;user-select:none" onclick="setPricingSort('name')">模型 <span id="sort-icon-name" style="font-size:.75rem">↕</span></th>
+                  <th style="cursor:pointer;user-select:none;text-align:right" onclick="setPricingSort('input_asc')">官方输入价 <span id="sort-icon-oin" style="font-size:.75rem">↕</span></th>
+                  <th style="cursor:pointer;user-select:none;text-align:right" onclick="setPricingSort('output_asc')">官方输出价 <span id="sort-icon-oout" style="font-size:.75rem">↕</span></th>
+                  <th style="cursor:pointer;user-select:none;text-align:right;color:#22c55e" onclick="setPricingSort('input_asc')">本站输入价 <span id="sort-icon-in" style="font-size:.75rem">↕</span></th>
+                  <th style="cursor:pointer;user-select:none;text-align:right;color:#22c55e" onclick="setPricingSort('output_asc')">本站输出价 <span id="sort-icon-out" style="font-size:.75rem">↕</span></th>
                   <th style="text-align:center">折扣</th>
                   <th>说明</th>
                 </tr>
@@ -237,19 +208,9 @@
             </table>
           </div>
 
-          <!-- 卡片视图 -->
           <div id="pricing-card-view" style="display:none">
             <div id="pricing-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px"></div>
           </div>
-=======
-          <p class="section-desc" style="text-align:left;margin-bottom:8px">API 调用时在请求 body 中指定 <code>model</code> 即可，平台按实际使用的模型计费。</p>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>模型</th><th>输入</th><th>输出</th><th>说明</th></tr></thead>
-              <tbody id="pricing-body"></tbody>
-            </table>
-          </div>
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
         </div>
       </div>
 
@@ -261,17 +222,14 @@
         </div>
 
         <div class="card section-card recharge-card">
-<<<<<<< HEAD
           <p class="section-desc" style="text-align:left;margin-bottom:12px">选择支付宝或微信在线支付，支付成功后余额自动到账；也可使用兑换码（卡密）充值。</p>
 
-          <!-- 充值方式切换 -->
           <div class="tool-tabs recharge-tabs" style="margin-bottom:16px">
             <button class="tool-tab active" onclick="switchRechargeTab('alipay', this)">💙 支付宝支付</button>
             <button class="tool-tab" onclick="switchRechargeTab('wechat', this)">💚 微信支付</button>
             <button class="tool-tab" onclick="switchRechargeTab('redeem', this)">🎫 兑换码充值</button>
           </div>
 
-          <!-- 微信在线支付面板 -->
           <div id="recharge-wechat" class="recharge-panel" style="display:none">
             <div class="guide-steps-visual" style="margin-bottom:20px">
               <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>输入充值金额</strong><p>输入任意金额（最低 ¥1），或点击快捷档位快速填入</p></div></div>
@@ -296,7 +254,6 @@
             <p id="wechat-msg" class="msg" style="margin-top:8px"></p>
           </div>
 
-          <!-- 支付宝在线支付面板 -->
           <div id="recharge-alipay" class="recharge-panel">
             <div class="guide-steps-visual" style="margin-bottom:20px">
               <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>输入充值金额</strong><p>输入任意金额（最低 ¥1），或点击快捷档位快速填入</p></div></div>
@@ -319,43 +276,8 @@
             </div>
             <button id="alipay-pay-btn" class="btn btn-primary btn-block" style="margin-bottom:12px" disabled onclick="createAlipayPayment()">请输入充值金额</button>
             <p id="alipay-msg" class="msg" style="margin-top:8px"></p>
-=======
-          <p class="section-desc" style="text-align:left;margin-bottom:12px">支持两种充值方式：扫码支付或输入兑换码（卡密），充值后余额立即到账。</p>
-
-          <!-- 充值方式切换 -->
-          <div class="tool-tabs recharge-tabs" style="margin-bottom:16px">
-            <button class="tool-tab active" onclick="switchRechargeTab('scan', this)">📱 扫码充值</button>
-            <button class="tool-tab" onclick="switchRechargeTab('redeem', this)">🎫 兑换码充值</button>
           </div>
 
-          <!-- 扫码充值面板 -->
-          <div id="recharge-scan" class="recharge-panel">
-            <div class="guide-steps-visual" style="margin-bottom:20px">
-              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>选择支付方式和金额</strong><p>选择微信或支付宝，输入充值金额</p></div></div>
-              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>扫码支付</strong><p>使用对应 App 扫描生成的二维码完成支付</p></div></div>
-              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>点击确认到账</strong><p>支付完成后点击「我已支付」按钮，余额即时到账</p></div></div>
-            </div>
-
-            <div style="display:flex;gap:8px;margin-bottom:12px">
-              <button id="pay-wechat" class="btn btn-primary btn-sm" onclick="selectPayMethod('wechat')" style="flex:1">💚 微信支付</button>
-              <button id="pay-alipay" class="btn btn-outline btn-sm" onclick="selectPayMethod('alipay')" style="flex:1">💙 支付宝</button>
-            </div>
-            <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">选择充值金额（固定面额，扫码即锁定金额）</p>
-            <div class="amount-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
-              <button class="amount-btn" data-amount="2" onclick="selectScanAmount(2)">¥2</button>
-              <button class="amount-btn" data-amount="5" onclick="selectScanAmount(5)">¥5</button>
-              <button class="amount-btn" data-amount="10" onclick="selectScanAmount(10)">¥10</button>
-              <button class="amount-btn" data-amount="20" onclick="selectScanAmount(20)">¥20</button>
-              <button class="amount-btn" data-amount="50" onclick="selectScanAmount(50)">¥50</button>
-              <button class="amount-btn" data-amount="100" onclick="selectScanAmount(100)">¥100</button>
-              <button class="amount-btn" data-amount="500" onclick="selectScanAmount(500)">¥500</button>
-            </div>
-            <input type="hidden" id="scan-amount" value="">
-            <button id="create-order-btn" class="btn btn-primary btn-block" style="margin-bottom:12px" disabled>请先选择充值金额</button>
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
-          </div>
-
-          <!-- 兑换码充值面板 -->
           <div id="recharge-redeem" class="recharge-panel" style="display:none">
             <div class="redeem-row">
               <input id="redeem-input" type="text" placeholder="输入兑换码，例如：abc123xyz..." style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);">
@@ -365,7 +287,6 @@
 
           <p id="redeem-msg" class="msg" style="margin-top:8px"></p>
 
-          <!-- 充值记录 -->
           <div style="margin-top:16px">
             <div class="section-header" style="margin-bottom:8px"><h4 style="font-size:.9rem;color:var(--muted)">充值记录</h4></div>
             <div class="table-wrap">
@@ -387,7 +308,6 @@
 
         <div class="card section-card">
           <div class="section-header">
-<<<<<<< HEAD
             <div>
               <h3>API Key（调用凭证）</h3>
               <p class="section-desc">Key 是调用凭证，注册后自动生成。余额才是您购买的 Token 额度。</p>
@@ -399,15 +319,10 @@
               </button>
               <button id="create-key-btn" class="btn btn-primary btn-sm">创建新 Key</button>
             </div>
-=======
-            <div><h3>API Key（调用凭证）</h3><p class="section-desc">Key 是调用凭证，注册后自动生成。余额才是您购买的 Token 额度。</p></div>
-            <button id="create-key-btn" class="btn btn-primary btn-sm">创建新 Key</button>
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
           </div>
           <div id="keys-list"></div>
         </div>
 
-        <!-- 接入配置信息卡 -->
         <div class="card section-card connect-info-card">
           <div class="section-header"><h3>🔗 接入配置（填入这两项即可）</h3></div>
           <p class="section-desc" style="text-align:left;margin-bottom:16px">无论使用什么软件，都只需要填写下面这两项配置：</p>
@@ -538,7 +453,6 @@
           代理中心
         </div>
 
-        <!-- 未申请 / 申请中 / 已通过，三种状态动态渲染 -->
         <div id="agent-no-apply" class="card section-card" style="display:none">
           <h3>成为平台代理，轻松赚取推广佣金</h3>
           <div class="guide-steps-visual" style="margin:16px 0">
@@ -579,7 +493,6 @@
         </div>
 
         <div id="agent-approved" style="display:none">
-          <!-- 佣金统计 -->
           <div class="stats-row" style="margin-bottom:20px">
             <div class="card stat" style="flex:1">
               <span class="stat-label">可提现佣金</span>
@@ -591,12 +504,9 @@
             </div>
           </div>
 
-          <!-- 绑定默认收款码 -->
           <div class="card section-card" id="bind-qrcode-card">
             <h3>📌 绑定收款码（一键提现）</h3>
-            <p class="section-desc" style="text-align:left;margin-bottom:12px;color:var(--muted)">
-              上传并绑定一张收款码后，每次提现将默认使用该收款码，无需重复上传。
-            </p>
+            <p class="section-desc" style="text-align:left;margin-bottom:12px;color:var(--muted)">上传并绑定一张收款码后，每次提现将默认使用该收款码，无需重复上传。</p>
             <div id="bound-qrcode-display" style="display:none;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:12px">
                 <img id="bound-qrcode-img" src="" style="max-width:120px;max-height:120px;border-radius:8px;border:2px solid var(--border);cursor:pointer" onclick="showQrModal(document.getElementById('bound-qrcode-img').src)" title="点击查看大图" />
@@ -626,7 +536,6 @@
             </div>
           </div>
 
-          <!-- 邀请码/链接 -->
           <div class="card section-card">
             <h3>我的专属邀请码</h3>
             <div class="connect-fields" style="margin-top:12px">
@@ -649,24 +558,17 @@
             </div>
           </div>
 
-          <!-- 提现 -->
           <div class="card section-card">
             <h3>佣金提现</h3>
             <p class="section-desc" style="text-align:left;margin-bottom:16px;color:var(--muted)">提现至本人微信/支付宝，约 <strong style="color:var(--primary)">1 小时</strong>内到账。</p>
             <div style="display:grid;gap:12px;margin-bottom:12px">
-              <!-- 收款方式 -->
               <div>
                 <label style="display:block;margin-bottom:6px;font-size:.875rem;color:var(--muted)">收款方式</label>
                 <div style="display:flex;gap:8px">
-                  <button id="wd-pay-wechat" class="btn btn-outline btn-sm" onclick="selectWdPay('wechat')" style="flex:1;padding:8px 0">
-                    💚 微信
-                  </button>
-                  <button id="wd-pay-alipay" class="btn btn-outline btn-sm" onclick="selectWdPay('alipay')" style="flex:1;padding:8px 0">
-                    💙 支付宝
-                  </button>
+                  <button id="wd-pay-wechat" class="btn btn-outline btn-sm" onclick="selectWdPay('wechat')" style="flex:1;padding:8px 0">💚 微信</button>
+                  <button id="wd-pay-alipay" class="btn btn-outline btn-sm" onclick="selectWdPay('alipay')" style="flex:1;padding:8px 0">💙 支付宝</button>
                 </div>
               </div>
-              <!-- 收款码上传（默认隐藏，选择"重新上传"时显示） -->
               <div id="qrcode-upload-section" style="display:none">
                 <label style="display:block;margin-bottom:6px;font-size:.875rem;color:var(--muted)">收款码 <span style="font-weight:400;font-size:.8rem">（上传微信/支付宝收款二维码，管理员凭此打款）</span></label>
                 <div id="qrcode-upload-area" style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s"
@@ -682,7 +584,6 @@
                 </div>
                 <p id="qrcode-msg" style="margin-top:4px;font-size:.8rem;color:var(--muted)">未上传收款码</p>
               </div>
-              <!-- 提现金额 -->
               <div>
                 <label style="display:block;margin-bottom:6px;font-size:.875rem;color:var(--muted)">提现金额（元）</label>
                 <div style="display:flex;gap:8px;align-items:center">
@@ -696,7 +597,6 @@
             <p id="withdraw-msg" class="msg" style="margin-top:8px"></p>
           </div>
 
-          <!-- 提现记录 -->
           <div class="card section-card">
             <div class="section-header">
               <h3>提现记录</h3>
@@ -710,7 +610,6 @@
             </div>
           </div>
 
-          <!-- 佣金明细 -->
           <div class="card section-card">
             <h3>佣金明细</h3>
             <div class="table-wrap">
@@ -726,7 +625,6 @@
     </main>
   </div>
 
-<<<<<<< HEAD
   <!-- 支付弹窗（微信扫码支付） -->
   <div id="payment-modal" class="payment-modal" style="display:none">
     <div class="payment-content">
@@ -746,43 +644,14 @@
       </div>
       <p id="pay-error-msg" style="color:var(--danger);font-size:.85rem;text-align:center;margin-top:8px;min-height:1.2em"></p>
       <button class="btn btn-outline btn-block" onclick="closePaymentModal()" style="margin-top:12px">关闭</button>
-=======
-  <!-- 支付弹窗（全局） -->
-  <div id="payment-modal" class="payment-modal" style="display:none">
-    <div class="payment-content">
-      <h4 style="text-align:center;margin-bottom:8px">扫码支付</h4>
-      <p style="text-align:center;color:var(--muted);margin-bottom:16px" id="payment-info"></p>
-      <div class="qr-placeholder" style="text-align:center">
-        <img id="qr-code-image" src="" alt="收款码" style="max-width:220px;max-height:220px;border-radius:8px;display:none">
-        <div id="qr-no-image" style="padding:40px;color:var(--muted)">
-          <span style="font-size:3rem">📱</span>
-          <p style="margin-top:8px">收款码加载中...</p>
-        </div>
-        <p style="font-size:1.2rem;font-weight:700;color:var(--primary);margin-top:8px" id="qr-amount-display"></p>
-        <p style="font-size:.75rem;color:var(--muted);margin-top:4px" id="qr-order-no"></p>
-        <p style="font-size:.75rem;color:var(--warning,#f59e0b);margin-top:12px;line-height:1.5">
-          ⚠️ 金额已由收款码锁定，扫码后<br>请确认支付金额一致后完成支付
-        </p>
-      </div>
-      <p id="pay-error-msg" style="color:var(--danger);font-size:.85rem;text-align:center;margin-top:8px;min-height:1.2em"></p>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn btn-outline btn-block" onclick="closePaymentModal()">取消支付</button>
-        <button class="btn btn-primary btn-block" id="confirm-pay-btn" onclick="confirmPayment()">✅ 我已支付完成</button>
-      </div>
-      <p style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:8px">
-        支付完成后需等待管理员审核到账
-      </p>
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     </div>
   </div>
 
-  <!-- 提现确认弹窗（选择收款码方式） -->
+  <!-- 提现确认弹窗 -->
   <div id="withdraw-confirm-modal" class="payment-modal" style="display:none">
     <div class="payment-content" style="max-width:420px">
       <h4 style="text-align:center;margin-bottom:8px">选择收款码</h4>
-      <p style="text-align:center;color:var(--muted);margin-bottom:16px">
-        您已绑定默认收款码，是否使用？
-      </p>
+      <p style="text-align:center;color:var(--muted);margin-bottom:16px">您已绑定默认收款码，是否使用？</p>
       <div id="wd-confirm-qrcode-preview" style="text-align:center;margin-bottom:12px">
         <img id="wd-confirm-qrcode-img" src="" style="max-width:180px;max-height:180px;border-radius:8px;border:2px solid var(--border)" />
       </div>
@@ -791,20 +660,13 @@
         &nbsp;·&nbsp;收款方式：<strong id="wd-confirm-method"></strong>
       </p>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn btn-primary btn-block" onclick="confirmWithdrawWithBound()">
-          ✅ 使用已绑定收款码
-        </button>
-        <button class="btn btn-outline btn-block" onclick="startNewQrcodeUpload()">
-          📷 重新上传收款码
-        </button>
-        <button class="btn btn-outline btn-block" style="color:var(--muted)" onclick="closeWithdrawConfirmModal()">
-          取消
-        </button>
+        <button class="btn btn-primary btn-block" onclick="confirmWithdrawWithBound()">✅ 使用已绑定收款码</button>
+        <button class="btn btn-outline btn-block" onclick="startNewQrcodeUpload()">📷 重新上传收款码</button>
+        <button class="btn btn-outline btn-block" style="color:var(--muted)" onclick="closeWithdrawConfirmModal()">取消</button>
       </div>
     </div>
   </div>
 
-<<<<<<< HEAD
   <!-- API Key 编辑/创建模态框 -->
   <div id="api-key-modal" class="payment-modal" style="display:none">
     <div class="payment-content" style="max-width:520px">
@@ -817,9 +679,7 @@
     </div>
   </div>
 
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
-  <!-- 浮动铃铛（可拖拽，登录后显示） -->
+  <!-- 浮动铃铛 -->
   <div class="floating-bell" id="floating-bell" style="display:none" title="消息通知（可拖拽）">
     <button class="notify-bell" id="notify-bell" onclick="toggleNotifyFloat(event)">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -827,7 +687,7 @@
     <span class="notify-badge" id="notify-badge">0</span>
   </div>
 
-  <!-- 浮动消息面板（可拖拽） -->
+  <!-- 浮动消息面板 -->
   <div class="notify-float" id="notify-float">
     <div class="notify-float-header" id="notify-float-header">
       <span class="notify-float-title">消息通知</span>
@@ -843,7 +703,6 @@
     </div>
   </div>
 
-<<<<<<< HEAD
   <!-- 浮空联系客服 -->
   <button class="cs-float" id="csFloat" title="联系客服" onclick="toggleCsPopup()">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
@@ -868,16 +727,12 @@
   <script src="/static/app.js"></script>
   <script>initUserDashboard();</script>
 
-  <!-- 底部 ICP 备案号（固定在最底部，所有页面可见） -->
-  <div class="icp-footer">
+  <!-- 底部 ICP 备案号 -->
+  <footer class="icp-footer">
     <span>© 2026 {{ platform_name }}</span>
     <span>·</span>
     <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">琼ICP备2026009208号</a>
-  </div>
+  </footer>
 
-=======
-  <script src="/static/app.js"></script>
-  <script>initUserDashboard();</script>
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 </body>
 </html>

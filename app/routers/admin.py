@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-<<<<<<< HEAD
 import json
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 import os
 import secrets
 import uuid
@@ -23,10 +20,7 @@ from app.models import (
     AgentWithdrawal,
     WithdrawalStatus,
     ChannelStatus,
-<<<<<<< HEAD
     ModelFallback,
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     ModelPricing,
     PlatformQrcode,
     RechargeOrder,
@@ -44,14 +38,11 @@ from app.schemas import (
     ChannelOut,
     ChannelUpdate,
     DashboardStats,
-<<<<<<< HEAD
     FallbackCreate,
     FallbackOut,
     FallbackUpdate,
     MarginItem,
     MarginReport,
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     ModelPricingCreate,
     ModelPricingOut,
     ModelPricingUpdate,
@@ -143,7 +134,6 @@ async def create_channel(data: ChannelCreate, admin: User = Depends(get_admin_us
     channel = UpstreamChannel(**data.model_dump())
     db.add(channel)
     await db.flush()
-    # 自动为渠道声明的模型创建默认定价（在 commit 之前完成）
     created = await ensure_pricing_for_models(db, data.models)
     if created:
         channel.remark = (channel.remark or "") + f" | 自动创建定价: {','.join(created)}"
@@ -171,7 +161,6 @@ async def update_channel(
         elif v is not None:
             setattr(channel, k, v)
     await db.flush()
-    # 如果 models 字段有变化，自动为新模型创建定价
     new_models = updates.get("models")
     if new_models is not None and new_models != old_models:
         await ensure_pricing_for_models(db, new_models)
@@ -201,13 +190,9 @@ async def create_pricing(data: ModelPricingCreate, admin: User = Depends(get_adm
     existing = await db.execute(select(ModelPricing).where(ModelPricing.model == data.model))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="模型定价已存在")
-<<<<<<< HEAD
     data_dict = data.model_dump()
     data_dict['tags'] = json.dumps(data_dict.get('tags') or [], ensure_ascii=False)
     pricing = ModelPricing(**data_dict)
-=======
-    pricing = ModelPricing(**data.model_dump())
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     db.add(pricing)
     await db.commit()
     await db.refresh(pricing)
@@ -226,13 +211,9 @@ async def update_pricing(
     if not pricing:
         raise HTTPException(status_code=404, detail="定价不存在")
     for k, v in data.model_dump(exclude_unset=True).items():
-<<<<<<< HEAD
         if k == 'tags':
             setattr(pricing, k, json.dumps(v or [], ensure_ascii=False))
         elif v is not None:
-=======
-        if v is not None:
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
             setattr(pricing, k, v)
     await db.commit()
     return {"ok": True}
@@ -357,7 +338,6 @@ async def verify_recharge_order(
             await recharge_balance(db, order_user, order.amount,
                                    f"扫码充值 [{order.pay_method}] #{order.order_no}")
 
-        # 通知用户充值到账
         await create_notification(
             db, order.user_id, "commission_earned",
             f"充值 ¥{order.amount} 已到账，当前余额 ¥{order_user.balance:.2f}"
@@ -429,7 +409,6 @@ async def upload_platform_qrcode(
 
     url = f"/static/uploads/platform/{filename}"
 
-    # 更新或创建数据库记录
     existing = await db.execute(
         select(PlatformQrcode).where(
             PlatformQrcode.pay_method == pay_method,
@@ -458,7 +437,6 @@ async def list_agents(
     result = await db.execute(select(Agent).order_by(Agent.id.desc()))
     agents = result.scalars().all()
 
-    # 批量查用户名
     user_ids = [a.user_id for a in agents]
     users_res = await db.execute(select(User).where(User.id.in_(user_ids)))
     users_map = {u.id: u.username for u in users_res.scalars().all()}
@@ -495,7 +473,6 @@ async def approve_agent(
     if agent.status == AgentStatus.approved:
         raise HTTPException(status_code=400, detail="该代理已经通过审批")
 
-    # 生成唯一邀请码
     while True:
         code = secrets.token_urlsafe(8).upper()[:10]
         existing = await db.execute(select(Agent).where(Agent.invite_code == code))
@@ -506,7 +483,6 @@ async def approve_agent(
     agent.invite_code = code
     agent.approved_at = datetime.now(timezone.utc)
 
-    # 通知代理用户
     await create_notification(
         db, agent.user_id, "agent_approved",
         f"您的代理申请已通过！邀请码：{code}", related_id=agent.id,
@@ -531,7 +507,6 @@ async def reject_agent(
         raise HTTPException(status_code=400, detail="只能拒绝待审批状态的申请")
     agent.status = AgentStatus.rejected
 
-    # 通知代理用户
     await create_notification(
         db, agent.user_id, "agent_rejected",
         "您的代理申请被拒绝，如有疑问请联系管理员", related_id=agent.id,
@@ -608,7 +583,6 @@ async def list_agent_withdrawals(
     )
     withdrawals = result.scalars().all()
 
-    # 批量查用户名
     user_ids = list({w.user_id for w in withdrawals})
     users_res = await db.execute(select(User).where(User.id.in_(user_ids)))
     users_map = {u.id: u.username for u in users_res.scalars().all()}
@@ -657,7 +631,6 @@ async def complete_agent_withdrawal(
     w.processed_at = datetime.now(timezone.utc)
     w.processor_id = admin.id
 
-    # 通知代理用户
     await create_notification(
         db, w.user_id, "withdrawal_completed",
         f"提现申请 ¥{w.amount:.2f} 已打款到您的收款账户", related_id=w.id,
@@ -681,7 +654,6 @@ async def reject_agent_withdrawal(
     if w.status != WithdrawalStatus.pending:
         raise HTTPException(status_code=400, detail="该申请已处理，无法拒绝")
 
-    # 退回冻结的佣金
     agent_res = await db.execute(select(Agent).where(Agent.id == w.agent_id))
     agent = agent_res.scalar_one_or_none()
     if agent:
@@ -691,7 +663,6 @@ async def reject_agent_withdrawal(
     w.processed_at = datetime.now(timezone.utc)
     w.processor_id = admin.id
 
-    # 通知代理用户
     await create_notification(
         db, w.user_id, "withdrawal_rejected",
         f"提现申请 ¥{w.amount:.2f} 被拒绝，佣金已退回您的账户", related_id=w.id,
@@ -701,7 +672,6 @@ async def reject_agent_withdrawal(
     return {"ok": True, "message": "提现申请已拒绝，佣金已退回代理账户"}
 
 
-<<<<<<< HEAD
 # ======= 降级映射管理 =======
 
 @router.get("/fallbacks")
@@ -732,7 +702,6 @@ async def create_fallback(
     db: AsyncSession = Depends(get_db),
 ):
     """创建降级映射"""
-    # 检查是否已存在相同映射
     existing = await db.execute(
         select(ModelFallback).where(
             ModelFallback.source_model == data.source_model,
@@ -802,18 +771,15 @@ async def margin_report(
     db: AsyncSession = Depends(get_db),
 ):
     """按模型展示成本/售价/利润的毛利报告"""
-    # 获取所有定价数据
     pricing_result = await db.execute(select(ModelPricing))
     all_pricing = pricing_result.scalars().all()
 
-    # 获取最近 30 天用量统计
     thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
     usage_result = await db.execute(
         select(UsageLog).where(UsageLog.created_at >= thirty_days_ago)
     )
     recent_usage = usage_result.scalars().all()
 
-    # 按模型汇总用量
     model_usage: dict[str, dict] = {}
     for u in recent_usage:
         if u.model not in model_usage:
@@ -828,12 +794,12 @@ async def margin_report(
     for p in all_pricing:
         if not p.is_active:
             continue
-        selling_avg = (p.input_price + p.output_price) / 2  # 平均售价
+        selling_avg = (p.input_price + p.output_price) / 2
         profit_per_unit = selling_avg - p.cost_price
         margin_pct = (profit_per_unit / selling_avg * 100) if selling_avg > 0 else 0
 
         usage = model_usage.get(p.model, {"count": 0, "revenue": 0.0})
-        cost_total = usage["count"] * p.cost_price  # 简化计算
+        cost_total = usage["count"] * p.cost_price
         profit_total = usage["revenue"] - cost_total
 
         total_revenue += usage["revenue"]
@@ -864,7 +830,3 @@ async def margin_report(
             "overall_margin_pct": round(total_profit / total_revenue * 100, 2) if total_revenue > 0 else 0,
         },
     }
-
-
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03

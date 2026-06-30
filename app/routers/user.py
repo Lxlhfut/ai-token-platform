@@ -1,8 +1,5 @@
 from datetime import datetime, timezone
-<<<<<<< HEAD
 import json
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 import secrets
 import os
 import uuid
@@ -27,7 +24,6 @@ from app.models import (
     Transaction,
     TransactionType,
     User,
-    UserRole,
     UserRole,
 )
 from app.routers.notifications import create_notification
@@ -122,19 +118,14 @@ async def create_api_key(data: ApiKeyCreate, user: User = Depends(get_current_us
     if len(result.scalars().all()) >= 5:
         raise HTTPException(status_code=400, detail="最多创建 5 个 API Key")
     key = ApiKey(user_id=user.id, key=generate_api_key(), name=data.name)
-<<<<<<< HEAD
-    # 序列化 allowed_models
     if data.allowed_models:
         key.allowed_models = json.dumps(data.allowed_models, ensure_ascii=False)
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     db.add(key)
     await db.commit()
     await db.refresh(key)
     return key
 
 
-<<<<<<< HEAD
 @router.put("/api-keys/{key_id}", response_model=ApiKeyOut)
 async def update_api_key(
     key_id: int,
@@ -147,10 +138,8 @@ async def update_api_key(
     key = result.scalar_one_or_none()
     if not key:
         raise HTTPException(status_code=404, detail="API Key 不存在")
-    # 更新 name
     if 'name' in data:
         key.name = data['name']
-    # 更新 allowed_models
     if 'allowed_models' in data:
         key.allowed_models = json.dumps(data['allowed_models'] or [], ensure_ascii=False)
     await db.commit()
@@ -158,8 +147,6 @@ async def update_api_key(
     return key
 
 
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 @router.delete("/api-keys/{key_id}")
 async def delete_api_key(key_id: int, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(ApiKey).where(ApiKey.id == key_id, ApiKey.user_id == user.id))
@@ -220,7 +207,6 @@ async def public_pricing(db: AsyncSession = Depends(get_db)):
     from app.schemas import ModelPricingOut
     from app.services.channel import channel_supports_model
 
-    # 取活跃定价（排除 * 通配）
     p_result = await db.execute(
         select(ModelPricing)
         .where(ModelPricing.is_active.is_(True), ModelPricing.model != "*")
@@ -228,11 +214,9 @@ async def public_pricing(db: AsyncSession = Depends(get_db)):
     )
     pricings = p_result.scalars().all()
 
-    # 取活跃渠道
     c_result = await db.execute(select(UpstreamChannel).where(UpstreamChannel.status == ChannelStatus.active))
     channels = c_result.scalars().all()
 
-    # 只返回有渠道支撑的定价
     supported = []
     for p in pricings:
         for ch in channels:
@@ -256,13 +240,11 @@ async def redeem_code(data: RedeemRequest, user: User = Depends(get_current_user
     if code_obj.is_used:
         raise HTTPException(status_code=400, detail="该兑换码已被使用")
 
-    # 标记为已使用
     code_obj.is_used = True
     code_obj.used_by = user.id
     code_obj.used_at = datetime.now(timezone.utc)
     await db.flush()
 
-    # 给用户充值
     user = await recharge_balance(db, user, code_obj.amount, f"兑换码充值 [{code_obj.code[:8]}...]")
     return {"ok": True, "amount": code_obj.amount, "balance": user.balance}
 
@@ -279,7 +261,6 @@ async def create_recharge_order(
     if data.amount < 0.01:
         raise HTTPException(status_code=400, detail="充值金额不能低于 0.01 元")
 
-    # 生成唯一订单号
     order_no = "R" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + secrets.token_hex(4).upper()
 
     order = RechargeOrder(
@@ -314,13 +295,11 @@ async def confirm_recharge_order(
     if order.status != RechargeOrderStatus.pending:
         raise HTTPException(status_code=400, detail="订单状态异常（已提交或已处理）")
 
-    # 标记为「已提交，待审核」
     order.status = RechargeOrderStatus.submitted
     order.paid_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(order)
 
-    # 通知管理员：新充值订单待审核
     from app.routers.notifications import create_notification
     admin_res = await db.execute(select(User).where(User.role == UserRole.admin))
     admins = admin_res.scalars().all()
@@ -372,7 +351,6 @@ async def apply_agent(
     db: AsyncSession = Depends(get_db),
 ):
     """申请成为代理"""
-    # 检查是否已有代理记录
     existing = await db.execute(select(Agent).where(Agent.user_id == user.id))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="您已提交过代理申请，请勿重复申请")
@@ -383,9 +361,8 @@ async def apply_agent(
         remark=data.remark,
     )
     db.add(agent)
-    await db.flush()  # 获取 agent.id
+    await db.flush()
 
-    # 通知所有管理员：新代理申请
     admins_res = await db.execute(select(User).where(User.role == UserRole.admin))
     for admin in admins_res.scalars().all():
         await create_notification(
@@ -417,7 +394,6 @@ async def get_agent_commissions(
     db: AsyncSession = Depends(get_db),
 ):
     """获取代理佣金明细"""
-    # 先找代理记录
     agent_res = await db.execute(select(Agent).where(Agent.user_id == user.id))
     agent = agent_res.scalar_one_or_none()
     if not agent:
@@ -465,7 +441,6 @@ async def agent_withdraw(
             detail=f"提现金额超过可用佣金余额（当前可用：¥{agent.available_commission:.4f}）",
         )
 
-    # 检查是否有待处理的提现申请（防止重复提交）
     pending_res = await db.execute(
         select(AgentWithdrawal).where(
             AgentWithdrawal.agent_id == agent.id,
@@ -475,7 +450,6 @@ async def agent_withdraw(
     if pending_res.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="您有待处理的提现申请，请等待管理员处理完成后再次提交")
 
-    # 预扣佣金（冻结，防止重复提现）
     agent.available_commission = round(agent.available_commission - data.amount, 6)
 
     withdrawal = AgentWithdrawal(
@@ -490,7 +464,6 @@ async def agent_withdraw(
     db.add(withdrawal)
     await db.flush()
 
-    # 通知所有管理员：新提现申请
     admins_res = await db.execute(select(User).where(User.role == UserRole.admin))
     for admin in admins_res.scalars().all():
         await create_notification(
@@ -551,7 +524,6 @@ async def upload_qrcode(
     user: User = Depends(get_current_user),
 ):
     """上传收款码图片（微信/支付宝），返回存储路径"""
-    # 验证文件类型
     allowed = {"image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"}
     if file.content_type not in allowed:
         raise HTTPException(status_code=400, detail="仅支持 PNG / JPG / GIF / WebP 格式")
@@ -559,7 +531,6 @@ async def upload_qrcode(
     if ext not in ("png", "jpg", "jpeg", "gif", "webp"):
         raise HTTPException(status_code=400, detail="不支持的文件扩展名")
 
-    # 确保上传目录存在
     upload_dir = os.path.join("app", "static", "uploads", "qrcodes")
     os.makedirs(upload_dir, exist_ok=True)
 
@@ -567,7 +538,7 @@ async def upload_qrcode(
     filepath = os.path.join(upload_dir, filename)
 
     content = await file.read()
-    if len(content) > 2 * 1024 * 1024:  # 2MB 限制
+    if len(content) > 2 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="图片大小不能超过 2MB")
 
     with open(filepath, "wb") as f:
@@ -597,7 +568,6 @@ async def bind_default_qrcode(
     if not agent:
         raise HTTPException(status_code=403, detail="您不是活跃代理，无法绑定收款码")
 
-    # 简单校验路径
     if not qrcode_path.startswith("/static/uploads/qrcodes/"):
         raise HTTPException(status_code=400, detail="无效的收款码路径，请先上传收款码")
 
@@ -605,9 +575,3 @@ async def bind_default_qrcode(
     await db.commit()
     await db.refresh(agent)
     return {"ok": True, "message": "收款码已绑定，后续提现将默认使用此收款码", "qrcode_path": qrcode_path}
-
-
-
-
-
-

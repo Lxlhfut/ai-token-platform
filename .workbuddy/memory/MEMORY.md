@@ -38,7 +38,6 @@
 - **必须给足够 max_tokens（建议 ≥1024）**，否则 content 为空（token 全被推理消耗）
 - 上游返回 `reasoning_content` 字段存放推理过程，content 是最终回答
 
-<<<<<<< HEAD
 ### 管理后台「分组管理」「降级映射」「毛利报告」（2026-06-29 新增）
 - **新表**：`model_groups`（模型分组：id, name, description, is_default, created_at）、`model_fallbacks`（降级映射：id, source_model, target_model, priority, is_active, created_at）
 - **ModelPricing 新增字段**：`cost_price`（上游成本价，元/1K tokens，用于毛利计算）、`created_at`
@@ -50,8 +49,9 @@
   - 侧边栏新增「分组管理」「降级映射」「毛利报告」三个入口
   - app.js 实现完整 CRUD 函数 + loadMarginReport（含总览卡片、分组汇总、明细表格）
   - 定价管理表单增加「上游成本价」字段，列表展示成本信息
-- **数据库迁移**：`app/init_db.py` 新增 `_add_column_if_missing` 通用迁移辅助函数
+- **数据库迁移**：`app/init_db.py` 新增 `_add_column_if_missing` 通用迁移辅助函数。⚠️ **SQLite ALTER TABLE 不支持 `DEFAULT CURRENT_TIMESTAMP`**，迁移中的 `created_at` 列必须用 `DEFAULT NULL`（2026-06-30 修复）
 - **数据库路径修复**：`app/database.py` 将相对 SQLite 路径解析为项目根目录绝对路径
+- **Git 冲突教训**：`git pull --allow-unrelated-histories` 导致不相关历史合并，冲突标记未被解决就 commit，导致 18 个文件残留 `<<<<<<< HEAD` 标记（2026-06-30 全部修复）
 - **用户端定价独立**：`dashboard.html` 侧边栏新增「模型定价」入口，`pane-pricing` 标签页独立展示定价表
 
 ### 关键文件（更新）
@@ -63,18 +63,6 @@
 - `app/static/app.js` - 前端交互逻辑（新增分组/降级/毛利报告全套函数）
 - `app/templates/admin.html` - 管理后台页面（新增分组/降级映射/毛利报告侧边栏和标签页）
 - `app/templates/dashboard.html` - 用户中心页面（新增模型定价独立标签页）
-=======
-### 关键文件
-- `app/models.py` - 数据库模型（User, ApiKey, RedeemCode, UpstreamChannel, ModelPricing, UsageLog, Transaction, Agent, AgentCommission）
-- `app/routers/user.py` - 用户 API（注册/登录/key 管理/兑换码充值/代理申请与提现）
-- `app/routers/admin.py` - 管理 API（渠道/定价/用户/兑换码生成/代理管理）
-- `app/routers/proxy.py` - OpenAI + Anthropic 双协议代理
-- `app/services/anthropic_adapter.py` - Anthropic ↔ OpenAI 格式双向转换
-- `app/services/billing.py` - 计费服务（充值时自动触发代理佣金分成）
-- `app/static/app.js` - 前端全部交互逻辑
-- `app/templates/terms.html` - 用户注册协议页面
-- `app/templates/privacy.html` - 隐私政策页面
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
 ### 代理系统（2026-06-25 新增/更新）
 - **新表**：`agents`（代理信息）、`agent_commissions`（佣金明细）、`agent_withdrawals`（提现申请）
