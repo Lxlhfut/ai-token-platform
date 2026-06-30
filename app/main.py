@@ -22,11 +22,7 @@ from app.config import get_settings
 from app.database import get_db
 from app.init_db import init_db
 from app.models import PlatformQrcode
-<<<<<<< HEAD
 from app.routers import admin, notifications, payment, proxy, user
-=======
-from app.routers import admin, notifications, proxy, user
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 from app.schemas import PlatformQrcodeOut
 
 
@@ -82,11 +78,8 @@ app.include_router(admin.router)
 
 app.include_router(notifications.router)
 
-<<<<<<< HEAD
 app.include_router(payment.router)
 
-=======
->>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
 
 static_dir = BASE_DIR / "static"
