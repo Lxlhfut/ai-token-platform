@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ platform_name }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a href="/" class="logo">{{ platform_name }}</a>
+      <div class="nav-links">
+        <a href="#features">功能</a>
+        <a href="#pricing">定价</a>
+        <a href="#docs">接入文档</a>
+        <a href="/dashboard" class="btn btn-primary">用户中心</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container">
+      <span class="badge">OpenAI 兼容 · 按量计费</span>
+      <h1>一站式 AI Token 中转平台</h1>
+      <p class="subtitle">注册即得 API Key，兼容 OpenAI SDK，支持 GPT / Claude / DeepSeek 等主流模型，按 Token 精确计费。</p>
+      <div class="hero-actions">
+        <a href="/dashboard" class="btn btn-primary btn-lg">立即开始</a>
+        <a href="#docs" class="btn btn-outline btn-lg">查看文档</a>
+      </div>
+    </div>
+  </header>
+
+  <section id="features" class="section">
+    <div class="container grid-3">
+      <div class="card feature">
+        <div class="icon">⚡</div>
+        <h3>低延迟中转</h3>
+        <p>多上游渠道负载均衡，自动路由到最优节点。</p>
+      </div>
+      <div class="card feature">
+        <div class="icon">🔑</div>
+        <h3>OpenAI 兼容</h3>
+        <p>只需替换 base_url 和 api_key，现有代码零改动接入。</p>
+      </div>
+      <div class="card feature">
+        <div class="icon">💰</div>
+        <h3>按量计费</h3>
+        <p>精确到 Token 的计费，余额透明，用量实时可查。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="docs" class="section section-dark">
+    <div class="container">
+      <h2>快速接入</h2>
+      <p class="section-desc">将 OpenAI 客户端的 base_url 指向本平台即可</p>
+      <pre class="code-block"><code># Python 示例
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-你的平台APIKey",
+    base_url="https://ylxunlapi.top/v1"
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+print(response.choices[0].message.content)</code></pre>
+      <pre class="code-block"><code># cURL 示例
+curl https://你的域名.com/v1/chat/completions \
+  -H "Authorization: Bearer sk-你的平台APIKey" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello"}]}'</code></pre>
+    </div>
+  </section>
+
+  <section id="pricing" class="section">
+    <div class="container">
+      <h2>模型定价</h2>
+      <p class="section-desc">价格单位：元 / 1000 tokens</p>
+      <div id="pricing-list" class="pricing-grid">加载中...</div>
+    </div>
+  </section>
+
+  <!-- 浮空联系客服 -->
+  <button class="cs-float" id="csFloat" title="联系客服" onclick="toggleCsPopup()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+    <span class="cs-float-label">联系客服</span>
+  </button>
+  <div class="cs-popup" id="csPopup">
+    <div class="cs-popup-header">
+      <span>客服咨询</span>
+      <button class="cs-popup-close" onclick="toggleCsPopup()">&times;</button>
+    </div>
+    <div class="cs-popup-body">
+      <p class="cs-popup-desc">如需帮助，请添加客服QQ</p>
+      <div class="cs-qq" onclick="copyQQ()" title="点击复制">
+        <span class="cs-qq-icon">QQ</span>
+        <span class="cs-qq-num">2195127736</span>
+        <span class="cs-qq-copy" id="csCopyHint">复制</span>
+      </div>
+      <a href="https://wpa.qq.com/msgrd?v=3&uin=2195127736&site=qq&menu=yes" target="_blank" rel="noopener" class="btn btn-primary btn-block btn-sm">打开 QQ 聊天</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      © 2026 {{ platform_name }} · 仅供学习与技术交流
+      <br class="footer-br">
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="beian-link">琼ICP备2026009208号</a>
+    </div>
+  </footer>
+
+  <script>
+    // 从公开接口动态加载定价，始终与后台配置一致
+    (async () => {
+      const el = document.getElementById('pricing-list');
+      try {
+        const resp = await fetch('/api/user/pricing');
+        const data = await resp.json();
+        if (data.length) {
+          el.innerHTML = data.map(p =>
+            '<div class="card price-card"><h4>' + p.model + '</h4><p class="price">输入 ¥' + p.input_price + ' / 输出 ¥' + p.output_price + '</p></div>'
+          ).join('');
+        } else {
+          el.innerHTML = '<p class="muted-text">暂无可用的模型定价，请先在上游渠道中配置模型</p>';
+        }
+      } catch {
+        el.innerHTML = '<div class="card price-card"><h4>gpt-4o-mini</h4><p class="price">输入 ¥0.001 / 输出 ¥0.004</p></div><div class="card price-card"><h4>deepseek-chat</h4><p class="price">输入 ¥0.0005 / 输出 ¥0.001</p></div>';
+      }
+    })();
+  </script>
+</body>
+</html>

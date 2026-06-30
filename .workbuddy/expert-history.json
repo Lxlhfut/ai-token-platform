@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "sessions": {
+    "58ac3a52954c4cf89471e9064df14c9a": [
+      {
+        "expertId": "DouyinStrategist",
+        "name": "斗音音",
+        "profession": "抖音策略师",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/03-Marketing/DouyinStrategist/DouyinStrategist.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/03-Marketing/DouyinStrategist/DouyinStrategist_zh.md",
+        "usedAt": 1782266246391,
+        "industryId": "all"
+      }
+    ]
+  },
+  "lastUpdated": 1782291937519
+}

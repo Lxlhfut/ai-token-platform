@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户中心 - {{ platform_name }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- 认证面板（未登录时显示） -->
+  <div id="auth-panel" class="card auth-card">
+    <div class="tabs">
+      <button class="tab active" data-tab="login">登录</button>
+      <button class="tab" data-tab="register">注册</button>
+    </div>
+
+    <!-- 登录 -->
+    <form id="login-form" class="auth-form">
+      <label>用户名</label><input type="text" name="username" required minlength="3" autocomplete="username">
+      <label>密码</label><input type="password" name="password" required minlength="6" autocomplete="current-password">
+      <button type="submit" class="btn btn-primary btn-block">登录</button>
+    </form>
+
+    <!-- 注册 -->
+    <form id="register-form" class="auth-form" style="display:none">
+      <label>用户名</label><input type="text" name="username" required minlength="3" maxlength="50" autocomplete="username">
+      <label>密码</label><input type="password" name="password" required minlength="6" autocomplete="new-password">
+      <label>确认密码</label><input type="password" name="confirm_password" required minlength="6" autocomplete="new-password">
+      <label>邀请码 <span style="color:var(--muted);font-weight:400;font-size:.8rem">（选填，有代理邀请时填写）</span></label>
+      <input type="text" name="invite_code" maxlength="20" placeholder="填写代理邀请码（可选）" autocomplete="off">
+      <label class="checkbox-label">
+        <input type="checkbox" name="agreed_terms" required>
+        <span>我已阅读并同意 <a href="/terms" target="_blank">《用户注册协议》</a> 和 <a href="/privacy" target="_blank">《隐私政策》</a></span>
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">注册</button>
+    </form>
+
+    <p id="auth-msg" class="msg"></p>
+  </div>
+
+  <!-- 主体布局（登录后显示） -->
+  <div id="app-layout" class="app-layout" style="display:none">
+
+    <!-- 移动端侧边栏切换按钮 -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      菜单
+    </button>
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <a href="/" class="sidebar-brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        {{ platform_name }}
+      </a>
+      <nav class="sidebar-nav">
+        <button class="sidebar-item active" data-tab="overview" onclick="switchTab('overview', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          概览
+        </button>
+        <button class="sidebar-item" data-tab="pricing" onclick="switchTab('pricing', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          模型定价
+        </button>
+        <button class="sidebar-item" data-tab="recharge" onclick="switchTab('recharge', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 0 2h-2a2 2 0 0 0 0 4h2a1 1 0 0 1 0 2H5a2 2 0 0 1 0-4h9"/></svg>
+          充值
+        </button>
+        <button class="sidebar-item" data-tab="apikey" onclick="switchTab('apikey', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          API Key
+        </button>
+        <button class="sidebar-item" data-tab="tutorials" onclick="switchTab('tutorials', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="20" y2="6"/></svg>
+          接入教程
+        </button>
+        <button class="sidebar-item" data-tab="records" onclick="switchTab('records', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          使用记录
+        </button>
+        <button class="sidebar-item" data-tab="agent" onclick="switchTab('agent', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          代理中心
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-content">
+          <button id="logout-btn" class="btn btn-outline" style="display:none">退出</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+
+      <!-- ====== 概览标签页 ====== -->
+      <div class="tab-pane active" id="pane-overview">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          控制台概览
+        </div>
+
+        <div class="stats-row">
+          <div class="card stat stat-balance"><span class="stat-label">余额（Token 额度）</span><span class="stat-value" id="balance">--</span><span class="stat-hint" id="balance-hint"></span></div>
+          <div class="card stat"><span class="stat-label">用户名</span><span class="stat-value" id="username">--</span></div>
+          <div class="card stat"><span class="stat-label">邮箱</span><span class="stat-value stat-email" id="email">--</span></div>
+        </div>
+
+        <div class="card section-card guide-card">
+          <h3>🚀 3 步开始使用</h3>
+          <ol class="guide-steps">
+            <li><strong>注册账户</strong> → 系统自动生成你的 API Key（无需懂代码）</li>
+            <li><strong>充值余额</strong> → 支付宝或微信在线支付，余额自动到账</li>
+            <li><strong>填写到软件里</strong> → 复制「Base URL + API Key」，填入 Cursor / Cherry Studio / LobeChat 等即可直接用</li>
+          </ol>
+          <p class="guide-note" id="recharge-notice"></p>
+        </div>
+
+        <!-- 接入配置快速复制 -->
+        <div class="card section-card connect-info-card">
+          <div class="section-header"><h3>🔗 接入配置（填入这两项即可）</h3></div>
+          <p class="section-desc" style="text-align:left;margin-bottom:16px">无论使用什么软件，都只需要填写下面这两项配置：</p>
+          <div class="connect-fields">
+            <div class="connect-field">
+              <span class="field-label">API Base URL</span>
+              <div class="field-row">
+                <code class="field-value" id="display-base-url">loading...</code>
+                <button class="btn btn-outline btn-sm" onclick="copyField('display-base-url', this)">复制</button>
+              </div>
+              <p class="field-hint">填到软件里的「Base URL / API 地址」这一项</p>
+            </div>
+            <div class="connect-field">
+              <span class="field-label">API Key（调用凭证）</span>
+              <div class="field-row">
+                <code class="field-value" id="display-api-key">loading...</code>
+                <button class="btn btn-outline btn-sm" onclick="copyField('display-api-key', this)">复制</button>
+              </div>
+              <p class="field-hint">填到软件里的「API Key / 密钥」这一项</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ====== 模型定价标签页 ====== -->
+      <div class="tab-pane" id="pane-pricing">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          模型定价
+        </div>
+
+        <div class="card section-card">
+          <div class="section-header">
+            <h3>🤖 模型定价（元/1000 tokens）</h3>
+          </div>
+          <p class="section-desc" style="text-align:left;margin-bottom:16px">API 调用时在请求 body 中指定 <code>model</code> 即可，平台按实际使用量计费。</p>
+
+          <!-- 工具栏：搜索 + 排序 + 视图切换 -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+            <!-- 搜索框 -->
+            <div style="position:relative;flex:1;min-width:180px">
+              <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="pricing-search" type="text" placeholder="搜索模型名称…" oninput="filterPricing()"
+                style="width:100%;padding:9px 12px 9px 34px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.875rem;box-sizing:border-box;transition:border-color .2s"
+                onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+            <!-- 排序下拉 -->
+            <select id="pricing-sort" onchange="filterPricing()"
+              style="padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.875rem;cursor:pointer;min-width:150px">
+              <option value="">默认排序</option>
+              <option value="input_asc">输入价 低 → 高</option>
+              <option value="input_desc">输入价 高 → 低</option>
+              <option value="output_asc">输出价 低 → 高</option>
+              <option value="output_desc">输出价 高 → 低</option>
+              <option value="discount_asc">折扣 低 → 高</option>
+              <option value="discount_desc">折扣 高 → 低</option>
+              <option value="name_asc">名称 A → Z</option>
+            </select>
+            <!-- 视图切换 -->
+            <div style="display:flex;gap:4px;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <button id="pricing-view-table" class="btn" onclick="switchPricingView('table')" title="表格视图"
+                style="padding:7px 11px;border-radius:0;border:none;background:var(--primary);color:#fff">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+              </button>
+              <button id="pricing-view-card" class="btn" onclick="switchPricingView('card')" title="卡片视图"
+                style="padding:7px 11px;border-radius:0;border:none;background:var(--surface);color:var(--muted)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 系列筛选 Chips -->
+          <div id="pricing-series-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+
+          <!-- 结果统计 -->
+          <div id="pricing-stat" style="font-size:.8rem;color:var(--muted);margin-bottom:10px"></div>
+
+          <!-- 表格视图 -->
+          <div id="pricing-table-view" class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="cursor:pointer;user-select:none" onclick="setPricingSort('name')">
+                    模型 <span id="sort-icon-name" style="font-size:.75rem">↕</span>
+                  </th>
+                  <th style="cursor:pointer;user-select:none;text-align:right" onclick="setPricingSort('input_asc')">
+                    官方输入价 <span id="sort-icon-oin" style="font-size:.75rem">↕</span>
+                  </th>
+                  <th style="cursor:pointer;user-select:none;text-align:right" onclick="setPricingSort('output_asc')">
+                    官方输出价 <span id="sort-icon-oout" style="font-size:.75rem">↕</span>
+                  </th>
+                  <th style="cursor:pointer;user-select:none;text-align:right;color:#22c55e" onclick="setPricingSort('input_asc')">
+                    本站输入价 <span id="sort-icon-in" style="font-size:.75rem">↕</span>
+                  </th>
+                  <th style="cursor:pointer;user-select:none;text-align:right;color:#22c55e" onclick="setPricingSort('output_asc')">
+                    本站输出价 <span id="sort-icon-out" style="font-size:.75rem">↕</span>
+                  </th>
+                  <th style="text-align:center">折扣</th>
+                  <th>说明</th>
+                </tr>
+              </thead>
+              <tbody id="pricing-body"></tbody>
+            </table>
+          </div>
+
+          <!-- 卡片视图 -->
+          <div id="pricing-card-view" style="display:none">
+            <div id="pricing-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 充值标签页 ====== -->
+      <div class="tab-pane" id="pane-recharge">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 0 2h-2a2 2 0 0 0 0 4h2a1 1 0 0 1 0 2H5a2 2 0 0 1 0-4h9"/></svg>
+          充值余额
+        </div>
+
+        <div class="card section-card recharge-card">
+          <p class="section-desc" style="text-align:left;margin-bottom:12px">选择支付宝或微信在线支付，支付成功后余额自动到账；也可使用兑换码（卡密）充值。</p>
+
+          <!-- 充值方式切换 -->
+          <div class="tool-tabs recharge-tabs" style="margin-bottom:16px">
+            <button class="tool-tab active" onclick="switchRechargeTab('alipay', this)">💙 支付宝支付</button>
+            <button class="tool-tab" onclick="switchRechargeTab('wechat', this)">💚 微信支付</button>
+            <button class="tool-tab" onclick="switchRechargeTab('redeem', this)">🎫 兑换码充值</button>
+          </div>
+
+          <!-- 微信在线支付面板 -->
+          <div id="recharge-wechat" class="recharge-panel" style="display:none">
+            <div class="guide-steps-visual" style="margin-bottom:20px">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>输入充值金额</strong><p>输入任意金额（最低 ¥1），或点击快捷档位快速填入</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>扫码支付</strong><p>点击「去微信支付」按钮，用微信扫描弹出的二维码完成支付</p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>自动到账</strong><p>支付成功后余额自动到账，无需等待审核，即刻开始使用</p></div></div>
+            </div>
+            <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">输入或选择充值金额（微信扫码支付，自动到账）</p>
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <input id="wechat-amount-input" type="number" min="1" step="0.01" placeholder="输入充值金额，例如 30" oninput="handleWechatAmountInput()"
+                style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);font-size:.95rem">
+              <span style="align-self:center;color:var(--muted)">元</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+              <button class="amount-btn wechat-amount-btn" data-amount="5" onclick="selectWechatAmount(5)">¥5</button>
+              <button class="amount-btn wechat-amount-btn" data-amount="10" onclick="selectWechatAmount(10)">¥10</button>
+              <button class="amount-btn wechat-amount-btn" data-amount="20" onclick="selectWechatAmount(20)">¥20</button>
+              <button class="amount-btn wechat-amount-btn" data-amount="50" onclick="selectWechatAmount(50)">¥50</button>
+              <button class="amount-btn wechat-amount-btn" data-amount="100" onclick="selectWechatAmount(100)">¥100</button>
+              <button class="amount-btn wechat-amount-btn" data-amount="500" onclick="selectWechatAmount(500)">¥500</button>
+            </div>
+            <button id="wechat-pay-btn" class="btn btn-primary btn-block" style="margin-bottom:12px" disabled onclick="createWechatPayment()">请输入充值金额</button>
+            <p id="wechat-msg" class="msg" style="margin-top:8px"></p>
+          </div>
+
+          <!-- 支付宝在线支付面板 -->
+          <div id="recharge-alipay" class="recharge-panel">
+            <div class="guide-steps-visual" style="margin-bottom:20px">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>输入充值金额</strong><p>输入任意金额（最低 ¥1），或点击快捷档位快速填入</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>跳转支付宝付款</strong><p>点击「去支付宝付款」按钮，自动跳转到支付宝收银台完成支付</p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>自动到账</strong><p>支付成功后余额自动到账，无需等待审核，即刻开始使用</p></div></div>
+            </div>
+            <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">输入或选择充值金额（支付成功后自动到账）</p>
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <input id="alipay-amount-input" type="number" min="1" step="0.01" placeholder="输入充值金额，例如 30" oninput="handleAlipayAmountInput()"
+                style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);font-size:.95rem">
+              <span style="align-self:center;color:var(--muted)">元</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+              <button class="amount-btn alipay-amount-btn" data-amount="5" onclick="selectAlipayAmount(5)">¥5</button>
+              <button class="amount-btn alipay-amount-btn" data-amount="10" onclick="selectAlipayAmount(10)">¥10</button>
+              <button class="amount-btn alipay-amount-btn" data-amount="20" onclick="selectAlipayAmount(20)">¥20</button>
+              <button class="amount-btn alipay-amount-btn" data-amount="50" onclick="selectAlipayAmount(50)">¥50</button>
+              <button class="amount-btn alipay-amount-btn" data-amount="100" onclick="selectAlipayAmount(100)">¥100</button>
+              <button class="amount-btn alipay-amount-btn" data-amount="500" onclick="selectAlipayAmount(500)">¥500</button>
+            </div>
+            <button id="alipay-pay-btn" class="btn btn-primary btn-block" style="margin-bottom:12px" disabled onclick="createAlipayPayment()">请输入充值金额</button>
+            <p id="alipay-msg" class="msg" style="margin-top:8px"></p>
+          </div>
+
+          <!-- 兑换码充值面板 -->
+          <div id="recharge-redeem" class="recharge-panel" style="display:none">
+            <div class="redeem-row">
+              <input id="redeem-input" type="text" placeholder="输入兑换码，例如：abc123xyz..." style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);">
+              <button id="redeem-btn" class="btn btn-primary" style="white-space:nowrap">立即兑换</button>
+            </div>
+          </div>
+
+          <p id="redeem-msg" class="msg" style="margin-top:8px"></p>
+
+          <!-- 充值记录 -->
+          <div style="margin-top:16px">
+            <div class="section-header" style="margin-bottom:8px"><h4 style="font-size:.9rem;color:var(--muted)">充值记录</h4></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>时间</th><th>金额</th><th>方式</th><th>状态</th></tr></thead>
+                <tbody id="recharge-orders-body"><tr><td colspan="4" style="color:var(--muted)">加载中...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== API Key 标签页 ====== -->
+      <div class="tab-pane" id="pane-apikey">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          API Key 管理
+        </div>
+
+        <div class="card section-card">
+          <div class="section-header">
+            <div>
+              <h3>API Key（调用凭证）</h3>
+              <p class="section-desc">Key 是调用凭证，注册后自动生成。余额才是您购买的 Token 额度。</p>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" onclick="switchTab('pricing')" style="border-color:var(--primary);color:var(--primary)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                查看模型定价
+              </button>
+              <button id="create-key-btn" class="btn btn-primary btn-sm">创建新 Key</button>
+            </div>
+          </div>
+          <div id="keys-list"></div>
+        </div>
+
+        <!-- 接入配置信息卡 -->
+        <div class="card section-card connect-info-card">
+          <div class="section-header"><h3>🔗 接入配置（填入这两项即可）</h3></div>
+          <p class="section-desc" style="text-align:left;margin-bottom:16px">无论使用什么软件，都只需要填写下面这两项配置：</p>
+          <div class="connect-fields">
+            <div class="connect-field">
+              <span class="field-label">API Base URL</span>
+              <div class="field-row">
+                <code class="field-value" id="display-base-url-2">loading...</code>
+                <button class="btn btn-outline btn-sm" onclick="copyField('display-base-url-2', this)">复制</button>
+              </div>
+              <p class="field-hint">填到软件里的「Base URL / API 地址」这一项</p>
+            </div>
+            <div class="connect-field">
+              <span class="field-label">API Key（调用凭证）</span>
+              <div class="field-row">
+                <code class="field-value" id="display-api-key-2">loading...</code>
+                <button class="btn btn-outline btn-sm" onclick="copyField('display-api-key-2', this)">复制</button>
+              </div>
+              <p class="field-hint">填到软件里的「API Key / 密钥」这一项</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 接入教程标签页 ====== -->
+      <div class="tab-pane" id="pane-tutorials">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          主流软件接入教程
+        </div>
+
+        <div class="card section-card">
+          <p class="section-desc" style="text-align:left;margin-bottom:16px">选择你使用的软件，按步骤填写 Base URL 和 API Key 即可：</p>
+          <div class="tool-tabs">
+            <button class="tool-tab active" onclick="showTool('cursor', this)">Cursor</button>
+            <button class="tool-tab" onclick="showTool('chatgpt-next', this)">ChatGPT-Next-Web</button>
+            <button class="tool-tab" onclick="showTool('cherry', this)">Cherry Studio</button>
+            <button class="tool-tab" onclick="showTool('lobechat', this)">LobeChat</button>
+            <button class="tool-tab" onclick="showTool('openai-translator', this)">OpenAI Translator</button>
+            <button class="tool-tab" onclick="showTool('python', this)">Python 代码</button>
+          </div>
+
+          <div id="tool-cursor" class="tool-guide">
+            <div class="guide-steps-visual">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>打开 Cursor 设置</strong><p>点击左上角 <code>Cursor</code> 菜单 → <code>Settings</code> → <code>Cursor Settings</code>（或按 <kbd>Ctrl+Shift+J</kbd>）</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>找到 Models 页面</strong><p>左侧菜单点击 <code>Models</code>，滚动到底部找到 <strong>「OpenAI API Key」</strong> 区域</p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>填写 API Key</strong><p>在 <code>OpenAI API Key</code> 输入框中填入你的 <strong>API Key</strong></p></div></div>
+              <div class="step-item"><span class="step-num">4</span><div class="step-body"><strong>填写 Base URL（关键！）</strong><p>勾选 <code>Override OpenAI Base URL</code>，填入 <strong>API Base URL</strong>（末尾不要加斜杠）</p></div></div>
+              <div class="step-item"><span class="step-num">5</span><div class="step-body"><strong>点击 Verify 验证</strong><p>点击 <code>Verify</code> 按钮，显示绿色 ✅ 即说明配置成功！</p></div></div>
+            </div>
+          </div>
+
+          <div id="tool-chatgpt-next" class="tool-guide" style="display:none">
+            <div class="guide-steps-visual">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>打开设置页面</strong><p>点击右下角「设置」图标（⚙️），进入系统设置</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>填写 API Key</strong><p>在 <code>API Key</code> 输入框中填入你的 <strong>API Key</strong></p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>填写自定义接口地址</strong><p>在 <code>接口地址 / Custom Endpoint</code> 填入 <strong>API Base URL</strong>（填到 <code>/v1</code> 这一层）</p></div></div>
+              <div class="step-item"><span class="step-num">4</span><div class="step-body"><strong>保存并对话</strong><p>点击确认保存，返回对话界面直接开始使用即可</p></div></div>
+            </div>
+          </div>
+
+          <div id="tool-cherry" class="tool-guide" style="display:none">
+            <div class="guide-steps-visual">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>打开 Cherry Studio</strong><p>进入 <code>设置</code> → <code>模型服务</code>（或左侧齿轮图标）</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>添加自定义提供商</strong><p>点击 <code>添加服务商</code>，类型选择 <code>OpenAI</code> 兼容</p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>填写配置</strong><p><code>API 地址</code> 填 <strong>API Base URL</strong>，<code>API Key</code> 填 <strong>API Key</strong></p></div></div>
+              <div class="step-item"><span class="step-num">4</span><div class="step-body"><strong>添加模型</strong><p>点击「检测」或手动输入模型名称（如 <code>gpt-4o-mini</code>），保存后即可对话</p></div></div>
+            </div>
+          </div>
+
+          <div id="tool-lobechat" class="tool-guide" style="display:none">
+            <div class="guide-steps-visual">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>打开设置</strong><p>左下角点击「设置」图标，进入 <code>AI 服务商</code> 页面</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>选择 OpenAI</strong><p>在服务商列表中找到 <code>OpenAI</code>，点击展开设置</p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>填写 API Key 和接口代理地址</strong><p><code>API Key</code> 填入 <strong>API Key</strong>；开启「接口代理地址」开关，填入 <strong>API Base URL</strong></p></div></div>
+              <div class="step-item"><span class="step-num">4</span><div class="step-body"><strong>开始对话</strong><p>返回对话页面，选择模型，即可开始使用</p></div></div>
+            </div>
+          </div>
+
+          <div id="tool-openai-translator" class="tool-guide" style="display:none">
+            <div class="guide-steps-visual">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>打开插件设置</strong><p>点击浏览器工具栏中的 OpenAI Translator 图标 → 设置（⚙️）</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>选择 OpenAI 服务商</strong><p>在 AI Provider 处选择 <code>OpenAI</code></p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>填写 API Key</strong><p>在 <code>API Key</code> 输入框填入 <strong>API Key</strong></p></div></div>
+              <div class="step-item"><span class="step-num">4</span><div class="step-body"><strong>填写 API URL</strong><p>在 <code>API URL</code> 处填入 <strong>API Base URL</strong>，保存即可</p></div></div>
+            </div>
+          </div>
+
+          <div id="tool-python" class="tool-guide" style="display:none">
+            <p class="section-desc" style="text-align:left;margin-bottom:8px">适合开发者，安装 <code>pip install openai</code> 后运行：</p>
+            <pre class="code-block" id="code-example"># loading...</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 使用记录标签页 ====== -->
+      <div class="tab-pane" id="pane-records">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          使用记录
+        </div>
+
+        <div class="card section-card">
+          <h3>调用记录</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>时间</th><th>模型</th><th>Tokens</th><th>扣费</th><th>状态</th></tr></thead>
+              <tbody id="usage-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card section-card">
+          <h3>交易记录</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>时间</th><th>类型</th><th>金额</th><th>余额</th><th>备注</th></tr></thead>
+              <tbody id="tx-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 代理中心标签页 ====== -->
+      <div class="tab-pane" id="pane-agent">
+        <div class="page-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          代理中心
+        </div>
+
+        <!-- 未申请 / 申请中 / 已通过，三种状态动态渲染 -->
+        <div id="agent-no-apply" class="card section-card" style="display:none">
+          <h3>成为平台代理，轻松赚取推广佣金</h3>
+          <div class="guide-steps-visual" style="margin:16px 0">
+            <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>提交申请</strong><p>填写申请说明，等待管理员审核（通常 1 小时内处理）</p></div></div>
+            <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>获得专属邀请码</strong><p>审核通过后，系统自动生成您的专属邀请链接</p></div></div>
+            <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>推广并赚取佣金</strong><p>通过邀请码注册的用户每次充值，您可获得相应佣金</p></div></div>
+          </div>
+          <div style="margin-bottom:12px">
+            <label style="display:block;margin-bottom:6px;font-size:.9rem;color:var(--muted)">申请说明（可选）</label>
+            <textarea id="agent-apply-remark" rows="3" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);resize:vertical;font-size:.9rem" placeholder="简单介绍一下您的推广渠道或方式..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="applyAgent()">提交代理申请</button>
+          <p id="agent-apply-msg" class="msg" style="margin-top:8px"></p>
+        </div>
+
+        <div id="agent-pending" class="card section-card" style="display:none">
+          <div style="text-align:center;padding:32px 0">
+            <div style="font-size:3rem;margin-bottom:16px">⏳</div>
+            <h3 style="color:var(--warning, #f59e0b)">代理申请审核中</h3>
+            <p style="color:var(--muted);margin-top:8px">您的申请已提交，请耐心等待管理员审批（通常 1 小时内）</p>
+          </div>
+        </div>
+
+        <div id="agent-rejected" class="card section-card" style="display:none">
+          <div style="text-align:center;padding:32px 0">
+            <div style="font-size:3rem;margin-bottom:16px">❌</div>
+            <h3 style="color:var(--danger)">代理申请未通过</h3>
+            <p style="color:var(--muted);margin-top:8px">如有疑问请联系平台客服</p>
+          </div>
+        </div>
+
+        <div id="agent-disabled" class="card section-card" style="display:none">
+          <div style="text-align:center;padding:32px 0">
+            <div style="font-size:3rem;margin-bottom:16px">🚫</div>
+            <h3 style="color:var(--danger)">代理资格已暂停</h3>
+            <p style="color:var(--muted);margin-top:8px">请联系平台客服了解详情</p>
+          </div>
+        </div>
+
+        <div id="agent-approved" style="display:none">
+          <!-- 佣金统计 -->
+          <div class="stats-row" style="margin-bottom:20px">
+            <div class="card stat" style="flex:1">
+              <span class="stat-label">可提现佣金</span>
+              <span class="stat-value" id="agent-available" style="color:#22c55e">--</span>
+            </div>
+            <div class="card stat" style="flex:1">
+              <span class="stat-label">累计佣金</span>
+              <span class="stat-value" id="agent-total">--</span>
+            </div>
+          </div>
+
+          <!-- 绑定默认收款码 -->
+          <div class="card section-card" id="bind-qrcode-card">
+            <h3>📌 绑定收款码（一键提现）</h3>
+            <p class="section-desc" style="text-align:left;margin-bottom:12px;color:var(--muted)">
+              上传并绑定一张收款码后，每次提现将默认使用该收款码，无需重复上传。
+            </p>
+            <div id="bound-qrcode-display" style="display:none;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <img id="bound-qrcode-img" src="" style="max-width:120px;max-height:120px;border-radius:8px;border:2px solid var(--border);cursor:pointer" onclick="showQrModal(document.getElementById('bound-qrcode-img').src)" title="点击查看大图" />
+                <div>
+                  <p style="color:#22c55e;font-size:.9rem;margin-bottom:4px">✅ 已绑定收款码</p>
+                  <p style="color:var(--muted);font-size:.8rem">提现时将默认使用此收款码</p>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn btn-outline btn-sm" onclick="startRebindQrcode()">更换收款码</button>
+              </div>
+            </div>
+            <div id="bind-qrcode-upload" style="display:none">
+              <div id="bind-qrcode-upload-area" style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s"
+                   onclick="document.getElementById('bind-qrcode-file-input').click()"
+                   onmouseenter="this.style.borderColor='var(--primary)'"
+                   onmouseleave="this.style.borderColor='var(--border)'">
+                <div id="bind-qrcode-placeholder" style="color:var(--muted);font-size:.9rem">
+                  <span style="font-size:2rem;display:block;margin-bottom:8px">📷</span>
+                  点击上传收款码<br><span style="font-size:.75rem">支持 PNG / JPG / GIF / WebP，不超过 2MB</span>
+                </div>
+                <img id="bind-qrcode-preview" src="" style="display:none;max-width:200px;max-height:200px;margin:0 auto;border-radius:8px" />
+                <input type="file" id="bind-qrcode-file-input" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" style="display:none" onchange="handleBindQrcodeUpload(event)" />
+              </div>
+              <p id="bind-qrcode-msg" style="margin-top:4px;font-size:.8rem;color:var(--muted)"></p>
+              <button id="bind-qrcode-confirm-btn" class="btn btn-primary" style="width:100%;margin-top:8px;display:none" onclick="confirmBindQrcode()">确认绑定此收款码</button>
+            </div>
+          </div>
+
+          <!-- 邀请码/链接 -->
+          <div class="card section-card">
+            <h3>我的专属邀请码</h3>
+            <div class="connect-fields" style="margin-top:12px">
+              <div class="connect-field">
+                <span class="field-label">邀请码</span>
+                <div class="field-row">
+                  <code class="field-value" id="agent-invite-code">--</code>
+                  <button class="btn btn-outline btn-sm" onclick="copyField('agent-invite-code', this)">复制</button>
+                </div>
+                <p class="field-hint">将此邀请码分享给潜在用户，对方注册时填写即可绑定到您名下</p>
+              </div>
+              <div class="connect-field">
+                <span class="field-label">专属注册链接</span>
+                <div class="field-row">
+                  <code class="field-value" id="agent-invite-link">--</code>
+                  <button class="btn btn-outline btn-sm" onclick="copyField('agent-invite-link', this)">复制链接</button>
+                </div>
+                <p class="field-hint">直接分享此链接，对方点击后自动填入邀请码</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 提现 -->
+          <div class="card section-card">
+            <h3>佣金提现</h3>
+            <p class="section-desc" style="text-align:left;margin-bottom:16px;color:var(--muted)">提现至本人微信/支付宝，约 <strong style="color:var(--primary)">1 小时</strong>内到账。</p>
+            <div style="display:grid;gap:12px;margin-bottom:12px">
+              <!-- 收款方式 -->
+              <div>
+                <label style="display:block;margin-bottom:6px;font-size:.875rem;color:var(--muted)">收款方式</label>
+                <div style="display:flex;gap:8px">
+                  <button id="wd-pay-wechat" class="btn btn-outline btn-sm" onclick="selectWdPay('wechat')" style="flex:1;padding:8px 0">
+                    💚 微信
+                  </button>
+                  <button id="wd-pay-alipay" class="btn btn-outline btn-sm" onclick="selectWdPay('alipay')" style="flex:1;padding:8px 0">
+                    💙 支付宝
+                  </button>
+                </div>
+              </div>
+              <!-- 收款码上传（默认隐藏，选择"重新上传"时显示） -->
+              <div id="qrcode-upload-section" style="display:none">
+                <label style="display:block;margin-bottom:6px;font-size:.875rem;color:var(--muted)">收款码 <span style="font-weight:400;font-size:.8rem">（上传微信/支付宝收款二维码，管理员凭此打款）</span></label>
+                <div id="qrcode-upload-area" style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s"
+                     onclick="document.getElementById('qrcode-file-input').click()"
+                     onmouseenter="this.style.borderColor='var(--primary)'"
+                     onmouseleave="this.style.borderColor='var(--border)'">
+                  <div id="qrcode-placeholder" style="color:var(--muted);font-size:.9rem">
+                    <span style="font-size:2rem;display:block;margin-bottom:8px">📷</span>
+                    点击上传收款码<br><span style="font-size:.75rem">支持 PNG / JPG / GIF / WebP，不超过 2MB</span>
+                  </div>
+                  <img id="qrcode-preview" src="" style="display:none;max-width:200px;max-height:200px;margin:0 auto;border-radius:8px" />
+                  <input type="file" id="qrcode-file-input" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" style="display:none" onchange="handleQrcodeUpload(event)" />
+                </div>
+                <p id="qrcode-msg" style="margin-top:4px;font-size:.8rem;color:var(--muted)">未上传收款码</p>
+              </div>
+              <!-- 提现金额 -->
+              <div>
+                <label style="display:block;margin-bottom:6px;font-size:.875rem;color:var(--muted)">提现金额（元）</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input id="withdraw-amount" type="number" step="1" min="1" placeholder="0"
+                    style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a0e1a;color:var(--text);">
+                  <button class="btn btn-outline btn-sm" onclick="withdrawAll()" style="white-space:nowrap">全部提现</button>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="agentWithdraw()">提交提现申请</button>
+            <p id="withdraw-msg" class="msg" style="margin-top:8px"></p>
+          </div>
+
+          <!-- 提现记录 -->
+          <div class="card section-card">
+            <div class="section-header">
+              <h3>提现记录</h3>
+              <button class="btn btn-outline btn-sm" onclick="loadWithdrawalHistory()">刷新</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>时间</th><th>金额</th><th>收款方式</th><th>状态</th><th>备注</th></tr></thead>
+                <tbody id="withdrawal-history-body"><tr><td colspan="5" style="color:var(--muted)">加载中...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 佣金明细 -->
+          <div class="card section-card">
+            <h3>佣金明细</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>时间</th><th>我的佣金</th><th>类型</th><th>备注</th></tr></thead>
+                <tbody id="agent-commissions-body"><tr><td colspan="4" style="color:var(--muted)">加载中...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- 支付弹窗（微信扫码支付） -->
+  <div id="payment-modal" class="payment-modal" style="display:none">
+    <div class="payment-content">
+      <h4 style="text-align:center;margin-bottom:4px">💚 微信扫码支付</h4>
+      <p style="text-align:center;color:var(--muted);margin-bottom:16px" id="payment-info">请使用微信扫描下方二维码完成支付</p>
+      <div class="qr-placeholder" style="text-align:center">
+        <div id="qr-wechat-container" style="display:inline-block;background:#fff;padding:12px;border-radius:12px">
+          <img id="qr-wechat-image" src="" alt="微信支付二维码" style="width:200px;height:200px;display:none">
+        </div>
+        <div id="qr-wechat-loading" style="padding:40px;color:var(--muted)">
+          <span style="font-size:3rem">⏳</span>
+          <p style="margin-top:8px">正在生成支付二维码...</p>
+        </div>
+        <p style="font-size:1.2rem;font-weight:700;color:var(--primary);margin-top:12px" id="qr-amount-display"></p>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:4px" id="qr-order-no"></p>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:8px" id="qr-status-hint">支付成功后自动到账</p>
+      </div>
+      <p id="pay-error-msg" style="color:var(--danger);font-size:.85rem;text-align:center;margin-top:8px;min-height:1.2em"></p>
+      <button class="btn btn-outline btn-block" onclick="closePaymentModal()" style="margin-top:12px">关闭</button>
+    </div>
+  </div>
+
+  <!-- 提现确认弹窗（选择收款码方式） -->
+  <div id="withdraw-confirm-modal" class="payment-modal" style="display:none">
+    <div class="payment-content" style="max-width:420px">
+      <h4 style="text-align:center;margin-bottom:8px">选择收款码</h4>
+      <p style="text-align:center;color:var(--muted);margin-bottom:16px">
+        您已绑定默认收款码，是否使用？
+      </p>
+      <div id="wd-confirm-qrcode-preview" style="text-align:center;margin-bottom:12px">
+        <img id="wd-confirm-qrcode-img" src="" style="max-width:180px;max-height:180px;border-radius:8px;border:2px solid var(--border)" />
+      </div>
+      <p style="text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:16px">
+        提现金额：<strong style="color:#22c55e" id="wd-confirm-amount"></strong>
+        &nbsp;·&nbsp;收款方式：<strong id="wd-confirm-method"></strong>
+      </p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary btn-block" onclick="confirmWithdrawWithBound()">
+          ✅ 使用已绑定收款码
+        </button>
+        <button class="btn btn-outline btn-block" onclick="startNewQrcodeUpload()">
+          📷 重新上传收款码
+        </button>
+        <button class="btn btn-outline btn-block" style="color:var(--muted)" onclick="closeWithdrawConfirmModal()">
+          取消
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Key 编辑/创建模态框 -->
+  <div id="api-key-modal" class="payment-modal" style="display:none">
+    <div class="payment-content" style="max-width:520px">
+      <h4 id="api-key-modal-title" style="text-align:center;margin-bottom:16px">编辑 API Key</h4>
+      <div id="api-key-modal-body"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:20px">
+        <button id="api-key-modal-submit" class="btn btn-primary btn-block">确认</button>
+        <button class="btn btn-outline btn-block" onclick="closeApiKeyModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 浮动铃铛（可拖拽，登录后显示） -->
+  <div class="floating-bell" id="floating-bell" style="display:none" title="消息通知（可拖拽）">
+    <button class="notify-bell" id="notify-bell" onclick="toggleNotifyFloat(event)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </button>
+    <span class="notify-badge" id="notify-badge">0</span>
+  </div>
+
+  <!-- 浮动消息面板（可拖拽） -->
+  <div class="notify-float" id="notify-float">
+    <div class="notify-float-header" id="notify-float-header">
+      <span class="notify-float-title">消息通知</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-xs btn-outline" onclick="markAllNotificationsRead(event)">全部已读</button>
+        <button class="notify-float-close" onclick="closeNotifyFloat(event)" title="关闭">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="notify-float-body" id="notify-list">
+      <div class="notify-empty">暂无消息</div>
+    </div>
+  </div>
+
+  <!-- 浮空联系客服 -->
+  <button class="cs-float" id="csFloat" title="联系客服" onclick="toggleCsPopup()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+    <span class="cs-float-label">联系客服</span>
+  </button>
+  <div class="cs-popup" id="csPopup">
+    <div class="cs-popup-header">
+      <span>客服咨询</span>
+      <button class="cs-popup-close" onclick="toggleCsPopup()">&times;</button>
+    </div>
+    <div class="cs-popup-body">
+      <p class="cs-popup-desc">如需帮助，请添加客服QQ</p>
+      <div class="cs-qq" onclick="copyQQ()" title="点击复制">
+        <span class="cs-qq-icon">QQ</span>
+        <span class="cs-qq-num">2195127736</span>
+        <span class="cs-qq-copy" id="csCopyHint">复制</span>
+      </div>
+      <a href="https://wpa.qq.com/msgrd?v=3&uin=2195127736&site=qq&menu=yes" target="_blank" rel="noopener" class="btn btn-primary btn-block btn-sm">打开 QQ 聊天</a>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+  <script>initUserDashboard();</script>
+
+  <!-- 底部 ICP 备案号（固定在最底部，所有页面可见） -->
+  <div class="icp-footer">
+    <span>© 2026 {{ platform_name }}</span>
+    <span>·</span>
+    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">琼ICP备2026009208号</a>
+  </div>
+
+</body>
+</html>
