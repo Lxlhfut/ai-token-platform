@@ -4,6 +4,7 @@ function getToken() { return localStorage.getItem('token'); }
 function setToken(t) { localStorage.setItem('token', t); }
 function clearToken() { localStorage.removeItem('token'); }
 
+<<<<<<< HEAD
 // ======= 浮空客服 =======
 function toggleCsPopup() {
   document.getElementById('csPopup').classList.toggle('open');
@@ -24,6 +25,8 @@ document.addEventListener('click', function(e) {
   }
 });
 
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 // ======= 侧边栏标签页切换 =======
 function switchTab(tab, el) {
   // 激活侧边栏项
@@ -364,7 +367,16 @@ async function initUserDashboard() {
   }
 
   document.getElementById('logout-btn').onclick = () => { stopNotifyPoll(); clearToken(); location.reload(); };
+<<<<<<< HEAD
   document.getElementById('create-key-btn').onclick = () => showApiKeyForm(null);
+=======
+  document.getElementById('create-key-btn').onclick = async () => {
+    try {
+      await api('/api/user/api-keys', { method: 'POST', body: JSON.stringify({ name: 'key-' + Date.now() }) });
+      await loadUserPanel();
+    } catch (err) { alert(err.message); }
+  };
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
   // 兑换码充值
   document.getElementById('redeem-btn').onclick = async () => {
@@ -384,8 +396,65 @@ async function initUserDashboard() {
     }
   };
 
+<<<<<<< HEAD
   window._wechatOrderNo = null;
   window._wechatPollTimer = null;
+=======
+  // 扫码支付：选择支付方式
+  window._selectedPayMethod = 'wechat';
+  window._selectedScanAmount = null;
+  window._currentOrderNo = null;
+  window._platformQrcodes = {};  // {"wechat_10": "/static/...", ...}
+
+  // 预加载平台收款码
+  try {
+    const qrcodes = await fetch('/api/platform-qrcodes').then(r => r.json());
+    qrcodes.forEach(q => {
+      window._platformQrcodes[q.pay_method + '_' + q.amount] = q.qrcode_path;
+    });
+  } catch (e) { /* 静默 */ }
+
+  // 生成支付二维码
+  document.getElementById('create-order-btn').onclick = async () => {
+    const amount = window._selectedScanAmount;
+    const msg = document.getElementById('redeem-msg');
+    msg.textContent = '';
+    msg.style.color = 'var(--danger)';
+    if (!amount) { msg.textContent = '请先选择充值金额'; return; }
+    try {
+      const order = await api('/api/user/recharge-order', {
+        method: 'POST',
+        body: JSON.stringify({ amount, pay_method: window._selectedPayMethod }),
+      });
+      window._currentOrderNo = order.order_no;
+      const methodLabel = window._selectedPayMethod === 'wechat' ? '微信' : '支付宝';
+      document.getElementById('payment-info').textContent = '请使用 ' + methodLabel + ' 扫描下方收款码支付';
+      document.getElementById('qr-amount-display').textContent = '¥' + amount.toFixed(2);
+      document.getElementById('qr-order-no').textContent = '订单号：' + order.order_no;
+
+      // 显示对应金额的收款码
+      const qrKey = window._selectedPayMethod + '_' + amount;
+      const qrPath = window._platformQrcodes[qrKey];
+      const imgEl = document.getElementById('qr-code-image');
+      const noImgEl = document.getElementById('qr-no-image');
+      if (qrPath && imgEl) {
+        imgEl.src = qrPath;
+        imgEl.style.display = 'block';
+        if (noImgEl) noImgEl.style.display = 'none';
+      } else {
+        if (imgEl) imgEl.style.display = 'none';
+        if (noImgEl) {
+          noImgEl.style.display = 'block';
+          noImgEl.innerHTML = '<span style="font-size:3rem">📱</span><p style="margin-top:8px;color:#f59e0b">该面额收款码尚未上传</p>';
+        }
+      }
+
+      document.getElementById('payment-modal').style.display = 'flex';
+    } catch (err) {
+      msg.textContent = err.message;
+    }
+  };
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
   if (getToken()) loadUserPanel();
 }
@@ -420,8 +489,11 @@ async function loadUserPanel() {
     document.getElementById('recharge-notice').textContent = config.recharge_notice || '';
 
     const keys = await api('/api/user/api-keys');
+<<<<<<< HEAD
     window._apiKeysData = {};
     keys.forEach(k => { window._apiKeysData[k.id] = k; });
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     const firstKey = keys.length ? keys[0].key : '（请先创建 API Key）';
     const baseUrl = window.location.origin + '/v1';
 
@@ -432,6 +504,7 @@ async function loadUserPanel() {
     apiKeyEls.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = firstKey; });
 
     document.getElementById('keys-list').innerHTML = keys.length
+<<<<<<< HEAD
       ? keys.map(k => {
           const allowedStr = (k.allowed_models && k.allowed_models.length)
             ? '<br><span style="color:var(--muted);font-size:.78rem">限调: ' + k.allowed_models.slice(0, 5).join(', ') + (k.allowed_models.length > 5 ? '...' : '') + '</span>'
@@ -443,6 +516,9 @@ async function loadUserPanel() {
             '<button class="btn btn-outline btn-sm" style="color:var(--danger)" onclick="deleteApiKey(' + k.id + ')">删除</button>' +
             '</div></div>';
         }).join('')
+=======
+      ? keys.map(k => '<div class="key-item"><div><span class="key-name">' + k.name + '</span><code class="key-value">' + k.key + '</code></div><button class="btn btn-outline btn-sm" data-key="' + k.key + '" onclick="copyText(this.dataset.key, this)">复制</button></div>').join('')
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
       : '<p class="muted-text">暂无 Key，请点击创建新 Key</p>';
 
     // Python 代码示例
@@ -451,10 +527,16 @@ async function loadUserPanel() {
       updateCodeExample(firstKey, baseUrl);
     }
 
+<<<<<<< HEAD
     window._pricingData = pricing;
     window._pricingView = 'table';
     buildPricingSeriesChips(pricing);
     filterPricing();
+=======
+    document.getElementById('pricing-body').innerHTML = pricing.length
+      ? pricing.map(p => '<tr><td><code>' + p.model + '</code></td><td>' + p.input_price + '</td><td>' + p.output_price + '</td><td>' + (p.description || '-') + '</td></tr>').join('')
+      : '<tr><td colspan="4">暂无定价信息</td></tr>';
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
     const usage = await api('/api/user/usage');
     document.getElementById('usage-body').innerHTML = usage.length
@@ -471,7 +553,11 @@ async function loadUserPanel() {
     try {
       const orders = await api('/api/user/recharge-orders');
       const statusLabel = { pending: '待支付', submitted: '待审核', paid: '已到账', cancelled: '已取消' };
+<<<<<<< HEAD
       const payLabel = { wechat: '微信扫码', alipay: '支付宝', wechat_pay: '微信支付' };
+=======
+      const payLabel = { wechat: '微信', alipay: '支付宝' };
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
       document.getElementById('recharge-orders-body').innerHTML = orders.length
         ? orders.map(o =>
             '<tr>' +
@@ -545,6 +631,7 @@ async function loadAdminPanel() {
     window._adminPricing = {};
     pricing.forEach(p => { window._adminPricing[p.id] = p; });
     document.getElementById('pricing-list-admin').innerHTML = pricing.length
+<<<<<<< HEAD
       ? pricing.map(p => {
           // 计算折扣：本站价 / 官方价 × 100%
           let inputDisc = '', outputDisc = '';
@@ -566,6 +653,13 @@ async function loadAdminPanel() {
             ' <button class="btn btn-outline btn-sm" onclick="editPricingForm(' + p.id + ', window._adminPricing[' + p.id + '])" style="margin-top:4px">编辑</button>' +
             ' <button class="btn btn-outline btn-sm" onclick="deletePricing(' + p.id + ')" style="margin-top:4px;color:var(--danger)">删除</button></div>';
         }).join('')
+=======
+      ? pricing.map(p =>
+        '<div class="pricing-item"><strong>' + p.model + '</strong><br>输入: ' + p.input_price + '/1K · 输出: ' + p.output_price + '/1K' +
+        ' <button class="btn btn-outline btn-sm" onclick="editPricingForm(' + p.id + ', window._adminPricing[' + p.id + '])" style="margin-top:4px">编辑</button>' +
+        ' <button class="btn btn-outline btn-sm" onclick="deletePricing(' + p.id + ')" style="margin-top:4px;color:var(--danger)">删除</button></div>'
+      ).join('')
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
       : '<p class="muted-text">暂无定价，请先添加</p>';
   } catch (e) {
     document.getElementById('pricing-list-admin').innerHTML = '<p class="muted-text">\u5b9a\u4ef7\u52a0\u8f7d\u5931\u8d25</p>';
@@ -623,7 +717,11 @@ async function loadAdminPanel() {
     const orders = await api('/api/admin/recharge-orders');
     const statusLabel = { pending: '⏳ 待支付', submitted: '🔄 待审核', paid: '✅ 已到账', cancelled: '❌ 已取消' };
     const statusColor = { pending: 'var(--muted)', submitted: '#f59e0b', paid: '#22c55e', cancelled: 'var(--danger)' };
+<<<<<<< HEAD
     const payLabel = { wechat: '微信扫码', alipay: '支付宝', wechat_pay: '微信支付' };
+=======
+    const payLabel = { wechat: '微信支付', alipay: '支付宝' };
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     document.getElementById('orders-body').innerHTML = orders.length
       ? orders.map(o => {
           let actionHtml = '';
@@ -654,11 +752,14 @@ async function loadAdminPanel() {
   await loadAgents().catch(() => {});
   // 加载提现申请
   await loadWithdrawals().catch(() => {});
+<<<<<<< HEAD
 
   // 加载降级映射
   try { await loadFallbacks(); } catch(e) {}
   // 加载毛利报告
   try { await loadMarginReport(); } catch(e) {}
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 }
 
 // ======= 订单审核 =======
@@ -805,6 +906,7 @@ function showChannelForm() {
   };
 }
 
+<<<<<<< HEAD
 // ====== 模型定价：搜索 / 筛选 / 排序 / 渲染 ======
 
 /** 预定义标签样式配置 */
@@ -1265,17 +1367,30 @@ function showPricingForm() {
     buildTagPickerHtml([]);
   document.getElementById('modal').style.display = 'flex';
   document.getElementById('modal-submit').textContent = '确认';
+=======
+function showPricingForm() {
+  document.getElementById('modal-title').textContent = '\u6dfb\u52a0\u6a21\u578b\u5b9a\u4ef7';
+  document.getElementById('modal-body').innerHTML =
+    '<label>\u6a21\u578b\u540d</label><input id="pr-model" placeholder="gpt-4o-mini">' +
+    '<label>\u8f93\u5165\u4ef7\u683c\uff08\u5143/1K tokens\uff09</label><input id="pr-in" type="number" step="0.0001" value="0.001">' +
+    '<label>\u8f93\u51fa\u4ef7\u683c\uff08\u5143/1K tokens\uff09</label><input id="pr-out" type="number" step="0.0001" value="0.004">';
+  document.getElementById('modal').style.display = 'flex';
+  document.getElementById('modal-submit').textContent = '\u786e\u8ba4';
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
   document.getElementById('modal-submit').onclick = async () => {
     try {
       await api('/api/admin/pricing', { method: 'POST', body: JSON.stringify({
         model: document.getElementById('pr-model').value,
         input_price: parseFloat(document.getElementById('pr-in').value),
         output_price: parseFloat(document.getElementById('pr-out').value),
+<<<<<<< HEAD
         official_input_price: parseFloat(document.getElementById('pr-off-in').value) || 0,
         official_output_price: parseFloat(document.getElementById('pr-off-out').value) || 0,
         cost_price: parseFloat(document.getElementById('pr-cost').value) || 0,
         description: document.getElementById('pr-desc').value.trim() || null,
         tags: getSelectedPricingTags(),
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
       })});
       closeModal();
       await loadAdminPanel();
@@ -1330,6 +1445,7 @@ function editPricingForm(id, current) {
   document.getElementById('modal-title').textContent = '编辑模型定价';
   document.getElementById('modal-body').innerHTML =
     '<label>模型名</label><input id="pr-model" value="' + escapeAttr(current.model) + '">' +
+<<<<<<< HEAD
     '<hr style="border-color:var(--border);margin:12px 0">' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
       '<div><label style="font-size:.8rem;color:#22c55e">本站输入价（元/1K）</label><input id="pr-in" type="number" step="0.0001" value="' + current.input_price + '"></div>' +
@@ -1340,6 +1456,11 @@ function editPricingForm(id, current) {
     '<label>上游成本价（元/1K tokens，用于毛利计算）</label><input id="pr-cost" type="number" step="0.0001" value="' + (current.cost_price || 0) + '">' +
     '<label>说明</label><input id="pr-desc" value="' + escapeAttr(current.description || '') + '">' +
     buildTagPickerHtml(current.tags || []);
+=======
+    '<label>输入价格（元/1K tokens）</label><input id="pr-in" type="number" step="0.0001" value="' + current.input_price + '">' +
+    '<label>输出价格（元/1K tokens）</label><input id="pr-out" type="number" step="0.0001" value="' + current.output_price + '">' +
+    '<label>说明</label><input id="pr-desc" value="' + escapeAttr(current.description || '') + '">';
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
   document.getElementById('modal').style.display = 'flex';
   document.getElementById('modal-submit').textContent = '保存修改';
   document.getElementById('modal-submit').onclick = async () => {
@@ -1348,11 +1469,15 @@ function editPricingForm(id, current) {
         model: document.getElementById('pr-model').value,
         input_price: parseFloat(document.getElementById('pr-in').value),
         output_price: parseFloat(document.getElementById('pr-out').value),
+<<<<<<< HEAD
         official_input_price: parseFloat(document.getElementById('pr-off-in').value) || 0,
         official_output_price: parseFloat(document.getElementById('pr-off-out').value) || 0,
         cost_price: parseFloat(document.getElementById('pr-cost').value) || 0,
         description: document.getElementById('pr-desc').value.trim() || null,
         tags: getSelectedPricingTags(),
+=======
+        description: document.getElementById('pr-desc').value.trim() || null,
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
       })});
       closeModal();
       await loadAdminPanel();
@@ -1498,6 +1623,7 @@ function updateCodeExample(apiKey, baseUrl) {
     'print(response.choices[0].message.content)';
 }
 
+<<<<<<< HEAD
   // ======= 充电 Tab 切换（默认支付宝）=======
 function switchRechargeTab(tab, btn) {
   document.querySelectorAll('.recharge-panel').forEach(el => el.style.display = 'none');
@@ -1698,6 +1824,66 @@ async function createAlipayPayment() {
   } catch (err) {
     msg.textContent = err.message || '支付创建失败，请稍后重试';
     if (btn) { btn.disabled = false; btn.textContent = '去支付宝支付 ¥' + amount; }
+=======
+// ======= 充值 Tab 切换 =======
+function switchRechargeTab(tab, btn) {
+  document.querySelectorAll('.recharge-panel').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.recharge-tabs .tool-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('recharge-' + tab).style.display = 'block';
+  if (btn) btn.classList.add('active');
+  document.getElementById('redeem-msg').textContent = '';
+}
+
+// ======= 选择支付方式 =======
+function selectPayMethod(method) {
+  window._selectedPayMethod = method;
+  document.getElementById('pay-wechat').className = method === 'wechat' ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+  document.getElementById('pay-alipay').className = method === 'alipay' ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+}
+
+// ======= 选择充值金额（固定面额） =======
+function selectScanAmount(amount) {
+  window._selectedScanAmount = amount;
+  document.getElementById('scan-amount').value = amount;
+  // 高亮选中的按钮
+  document.querySelectorAll('.amount-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.amount) === amount);
+  });
+  // 启用生成按钮
+  const btn = document.getElementById('create-order-btn');
+  if (btn) { btn.disabled = false; btn.textContent = '生成 ¥' + amount + ' 支付二维码'; }
+}
+
+// ======= 关闭支付弹窗 =======
+function closePaymentModal() {
+  document.getElementById('payment-modal').style.display = 'none';
+  window._currentOrderNo = null;
+}
+
+// ======= 确认支付 — 提交管理员审核 =======
+async function confirmPayment() {
+  if (!window._currentOrderNo) {
+    alert('未找到订单信息，请重新生成');
+    return;
+  }
+  const btn = document.getElementById('confirm-pay-btn');
+  const payMsg = document.getElementById('pay-error-msg');
+  if (payMsg) { payMsg.textContent = ''; payMsg.style.color = 'var(--danger)'; }
+  if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
+  try {
+    await api('/api/user/recharge-order/' + window._currentOrderNo + '/confirm', {
+      method: 'POST',
+    });
+    document.getElementById('payment-modal').style.display = 'none';
+    window._currentOrderNo = null;
+    const msg = document.getElementById('redeem-msg');
+    msg.style.color = '#f59e0b';
+    msg.textContent = '支付凭证已提交，等待管理员审核到账（通常 5-30 分钟）';
+  } catch (err) {
+    if (payMsg) { payMsg.textContent = err.message; }
+    else { alert(err.message); }
+    if (btn) { btn.disabled = false; btn.textContent = '✅ 我已支付完成'; }
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
   }
 }
 
@@ -2311,6 +2497,7 @@ async function rejectWithdrawal(id) {
     alert('操作失败：' + err.message);
   }
 }
+<<<<<<< HEAD
 
 // ============================================================
 //  管理端 - 降级映射管理
@@ -2441,3 +2628,5 @@ async function loadMarginReport() {
     body.innerHTML = '<tr><td colspan="10" style="color:var(--muted)">加载失败：' + e.message + '</td></tr>';
   }
 }
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03

@@ -8,7 +8,11 @@
 2. `pip install -r requirements.txt`
 3. `python -m uvicorn app.main:app --host 127.0.0.1 --port 8000`
 
+<<<<<<< HEAD
 访问：http://127.0.0.1:8000/ （用户中心 `/dashboard`）
+=======
+访问：http://127.0.0.1:8000/ （用户中心 `/dashboard`，管理后台 `/admin`）
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
 ## Docker
 

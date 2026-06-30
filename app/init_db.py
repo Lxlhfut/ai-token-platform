@@ -10,6 +10,7 @@ from app.models import ModelPricing, User, UserRole
 settings = get_settings()
 
 DEFAULT_PRICING = [
+<<<<<<< HEAD
     # 格式: (model, 本站输入价, 本站输出价, 官方输入价, 官方输出价, 描述)
     ("gpt-4o",         0.015, 0.06,  0.01875, 0.075,  "GPT-4o（官方价 $2.5/$10，本站 8 折）"),
     ("gpt-4o-mini",    0.001, 0.004, 0.00125, 0.005,  "GPT-4o Mini（官方价 $0.15/$0.6，本站 8 折）"),
@@ -29,6 +30,16 @@ async def _add_column_if_missing(conn, table: str, column: str, col_def: str):
     return False
 
 
+=======
+    ("gpt-4o", 0.015, 0.06, "GPT-4o"),
+    ("gpt-4o-mini", 0.001, 0.004, "GPT-4o Mini"),
+    ("gpt-3.5-turbo", 0.001, 0.002, "GPT-3.5 Turbo"),
+    ("claude-3-5-sonnet-20241022", 0.018, 0.09, "Claude 3.5 Sonnet"),
+    ("deepseek-chat", 0.0005, 0.001, "DeepSeek Chat"),
+]
+
+
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 async def _run_migrations(conn):
     """对已存在的数据库进行增量迁移（添加新列/表等）"""
     # 检查 users 表是否有 referrer_agent_id 列
@@ -69,6 +80,7 @@ async def _run_migrations(conn):
     # SQLite 的 Enum 字段通过 create_all 自动创建时已包含 submitted 状态
     # 存量数据库需手动确保 CHECK 约束包含 submitted
 
+<<<<<<< HEAD
     # ====== 补齐各表缺失的 created_at / cost_price / official_* 列（使用通用迁移辅助） ======
     await _add_column_if_missing(conn, "model_pricing", "created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     await _add_column_if_missing(conn, "model_pricing", "cost_price", "FLOAT DEFAULT 0.0")
@@ -79,6 +91,8 @@ async def _run_migrations(conn):
     await _add_column_if_missing(conn, "upstream_channels", "created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     await _add_column_if_missing(conn, "model_fallbacks", "created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
 
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
 async def init_db():
     os.makedirs("data", exist_ok=True)
@@ -102,12 +116,17 @@ async def init_db():
 
         result = await db.execute(select(ModelPricing))
         if not result.scalars().first():
+<<<<<<< HEAD
             for model, inp, out, off_in, off_out, desc in DEFAULT_PRICING:
                 db.add(ModelPricing(
                     model=model, input_price=inp, output_price=out,
                     official_input_price=off_in, official_output_price=off_out,
                     description=desc,
                 ))
+=======
+            for model, inp, out, desc in DEFAULT_PRICING:
+                db.add(ModelPricing(model=model, input_price=inp, output_price=out, description=desc))
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
         await db.commit()
 

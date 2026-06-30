@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
+<<<<<<< HEAD
 import json
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 import secrets
 import os
 import uuid
@@ -119,15 +122,19 @@ async def create_api_key(data: ApiKeyCreate, user: User = Depends(get_current_us
     if len(result.scalars().all()) >= 5:
         raise HTTPException(status_code=400, detail="最多创建 5 个 API Key")
     key = ApiKey(user_id=user.id, key=generate_api_key(), name=data.name)
+<<<<<<< HEAD
     # 序列化 allowed_models
     if data.allowed_models:
         key.allowed_models = json.dumps(data.allowed_models, ensure_ascii=False)
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     db.add(key)
     await db.commit()
     await db.refresh(key)
     return key
 
 
+<<<<<<< HEAD
 @router.put("/api-keys/{key_id}", response_model=ApiKeyOut)
 async def update_api_key(
     key_id: int,
@@ -151,6 +158,8 @@ async def update_api_key(
     return key
 
 
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 @router.delete("/api-keys/{key_id}")
 async def delete_api_key(key_id: int, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(ApiKey).where(ApiKey.id == key_id, ApiKey.user_id == user.id))

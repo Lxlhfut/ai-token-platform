@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+<<<<<<< HEAD
 import json
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 import os
 import secrets
 import uuid
@@ -20,7 +23,10 @@ from app.models import (
     AgentWithdrawal,
     WithdrawalStatus,
     ChannelStatus,
+<<<<<<< HEAD
     ModelFallback,
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     ModelPricing,
     PlatformQrcode,
     RechargeOrder,
@@ -38,11 +44,14 @@ from app.schemas import (
     ChannelOut,
     ChannelUpdate,
     DashboardStats,
+<<<<<<< HEAD
     FallbackCreate,
     FallbackOut,
     FallbackUpdate,
     MarginItem,
     MarginReport,
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     ModelPricingCreate,
     ModelPricingOut,
     ModelPricingUpdate,
@@ -192,9 +201,13 @@ async def create_pricing(data: ModelPricingCreate, admin: User = Depends(get_adm
     existing = await db.execute(select(ModelPricing).where(ModelPricing.model == data.model))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="模型定价已存在")
+<<<<<<< HEAD
     data_dict = data.model_dump()
     data_dict['tags'] = json.dumps(data_dict.get('tags') or [], ensure_ascii=False)
     pricing = ModelPricing(**data_dict)
+=======
+    pricing = ModelPricing(**data.model_dump())
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     db.add(pricing)
     await db.commit()
     await db.refresh(pricing)
@@ -213,9 +226,13 @@ async def update_pricing(
     if not pricing:
         raise HTTPException(status_code=404, detail="定价不存在")
     for k, v in data.model_dump(exclude_unset=True).items():
+<<<<<<< HEAD
         if k == 'tags':
             setattr(pricing, k, json.dumps(v or [], ensure_ascii=False))
         elif v is not None:
+=======
+        if v is not None:
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
             setattr(pricing, k, v)
     await db.commit()
     return {"ok": True}
@@ -684,6 +701,7 @@ async def reject_agent_withdrawal(
     return {"ok": True, "message": "提现申请已拒绝，佣金已退回代理账户"}
 
 
+<<<<<<< HEAD
 # ======= 降级映射管理 =======
 
 @router.get("/fallbacks")
@@ -848,3 +866,5 @@ async def margin_report(
     }
 
 
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03

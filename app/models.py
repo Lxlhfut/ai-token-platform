@@ -70,7 +70,10 @@ class ApiKey(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     last_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+<<<<<<< HEAD
     allowed_models: Mapped[Optional[str]] = mapped_column(String(2000), nullable=True, comment="允许调用的模型 JSON 数组，空表示全部")
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
     user: Mapped["User"] = relationship(back_populates="api_keys")
 
@@ -99,6 +102,7 @@ class ModelPricing(Base):
     model: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     input_price: Mapped[float] = mapped_column(Float, default=0.0)
     output_price: Mapped[float] = mapped_column(Float, default=0.0)
+<<<<<<< HEAD
     official_input_price: Mapped[float] = mapped_column(Float, default=0.0, comment="官方输入价格（元/1K tokens），用于展示折扣")
     official_output_price: Mapped[float] = mapped_column(Float, default=0.0, comment="官方输出价格（元/1K tokens），用于展示折扣")
     cost_price: Mapped[float] = mapped_column(Float, default=0.0, comment="上游成本价格（元/1K tokens），用于毛利计算")
@@ -118,6 +122,10 @@ class ModelFallback(Base):
     priority: Mapped[int] = mapped_column(Integer, default=0)   # 降级优先级（数字越小越优先）
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+=======
+    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
 
 class UsageLog(Base):

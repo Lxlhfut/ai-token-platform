@@ -60,10 +60,13 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
           概览
         </button>
+<<<<<<< HEAD
         <button class="sidebar-item" data-tab="pricing" onclick="switchTab('pricing', this)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           模型定价
         </button>
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
         <button class="sidebar-item" data-tab="recharge" onclick="switchTab('recharge', this)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 0 2h-2a2 2 0 0 0 0 4h2a1 1 0 0 1 0 2H5a2 2 0 0 1 0-4h9"/></svg>
           充值
@@ -112,7 +115,11 @@
           <h3>🚀 3 步开始使用</h3>
           <ol class="guide-steps">
             <li><strong>注册账户</strong> → 系统自动生成你的 API Key（无需懂代码）</li>
+<<<<<<< HEAD
             <li><strong>充值余额</strong> → 支付宝或微信在线支付，余额自动到账</li>
+=======
+            <li><strong>充值余额</strong> → 扫码支付或输入兑换码，余额立即到账</li>
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
             <li><strong>填写到软件里</strong> → 复制「Base URL + API Key」，填入 Cursor / Cherry Studio / LobeChat 等即可直接用</li>
           </ol>
           <p class="guide-note" id="recharge-notice"></p>
@@ -142,6 +149,7 @@
           </div>
         </div>
 
+<<<<<<< HEAD
       </div>
 
       <!-- ====== 模型定价标签页 ====== -->
@@ -151,10 +159,14 @@
           模型定价
         </div>
 
+=======
+        <!-- 模型定价 -->
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
         <div class="card section-card">
           <div class="section-header">
             <h3>🤖 模型定价（元/1000 tokens）</h3>
           </div>
+<<<<<<< HEAD
           <p class="section-desc" style="text-align:left;margin-bottom:16px">API 调用时在请求 body 中指定 <code>model</code> 即可，平台按实际使用量计费。</p>
 
           <!-- 工具栏：搜索 + 排序 + 视图切换 -->
@@ -229,6 +241,15 @@
           <div id="pricing-card-view" style="display:none">
             <div id="pricing-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px"></div>
           </div>
+=======
+          <p class="section-desc" style="text-align:left;margin-bottom:8px">API 调用时在请求 body 中指定 <code>model</code> 即可，平台按实际使用的模型计费。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>模型</th><th>输入</th><th>输出</th><th>说明</th></tr></thead>
+              <tbody id="pricing-body"></tbody>
+            </table>
+          </div>
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
         </div>
       </div>
 
@@ -240,6 +261,7 @@
         </div>
 
         <div class="card section-card recharge-card">
+<<<<<<< HEAD
           <p class="section-desc" style="text-align:left;margin-bottom:12px">选择支付宝或微信在线支付，支付成功后余额自动到账；也可使用兑换码（卡密）充值。</p>
 
           <!-- 充值方式切换 -->
@@ -297,6 +319,40 @@
             </div>
             <button id="alipay-pay-btn" class="btn btn-primary btn-block" style="margin-bottom:12px" disabled onclick="createAlipayPayment()">请输入充值金额</button>
             <p id="alipay-msg" class="msg" style="margin-top:8px"></p>
+=======
+          <p class="section-desc" style="text-align:left;margin-bottom:12px">支持两种充值方式：扫码支付或输入兑换码（卡密），充值后余额立即到账。</p>
+
+          <!-- 充值方式切换 -->
+          <div class="tool-tabs recharge-tabs" style="margin-bottom:16px">
+            <button class="tool-tab active" onclick="switchRechargeTab('scan', this)">📱 扫码充值</button>
+            <button class="tool-tab" onclick="switchRechargeTab('redeem', this)">🎫 兑换码充值</button>
+          </div>
+
+          <!-- 扫码充值面板 -->
+          <div id="recharge-scan" class="recharge-panel">
+            <div class="guide-steps-visual" style="margin-bottom:20px">
+              <div class="step-item"><span class="step-num">1</span><div class="step-body"><strong>选择支付方式和金额</strong><p>选择微信或支付宝，输入充值金额</p></div></div>
+              <div class="step-item"><span class="step-num">2</span><div class="step-body"><strong>扫码支付</strong><p>使用对应 App 扫描生成的二维码完成支付</p></div></div>
+              <div class="step-item"><span class="step-num">3</span><div class="step-body"><strong>点击确认到账</strong><p>支付完成后点击「我已支付」按钮，余额即时到账</p></div></div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <button id="pay-wechat" class="btn btn-primary btn-sm" onclick="selectPayMethod('wechat')" style="flex:1">💚 微信支付</button>
+              <button id="pay-alipay" class="btn btn-outline btn-sm" onclick="selectPayMethod('alipay')" style="flex:1">💙 支付宝</button>
+            </div>
+            <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">选择充值金额（固定面额，扫码即锁定金额）</p>
+            <div class="amount-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+              <button class="amount-btn" data-amount="2" onclick="selectScanAmount(2)">¥2</button>
+              <button class="amount-btn" data-amount="5" onclick="selectScanAmount(5)">¥5</button>
+              <button class="amount-btn" data-amount="10" onclick="selectScanAmount(10)">¥10</button>
+              <button class="amount-btn" data-amount="20" onclick="selectScanAmount(20)">¥20</button>
+              <button class="amount-btn" data-amount="50" onclick="selectScanAmount(50)">¥50</button>
+              <button class="amount-btn" data-amount="100" onclick="selectScanAmount(100)">¥100</button>
+              <button class="amount-btn" data-amount="500" onclick="selectScanAmount(500)">¥500</button>
+            </div>
+            <input type="hidden" id="scan-amount" value="">
+            <button id="create-order-btn" class="btn btn-primary btn-block" style="margin-bottom:12px" disabled>请先选择充值金额</button>
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
           </div>
 
           <!-- 兑换码充值面板 -->
@@ -331,6 +387,7 @@
 
         <div class="card section-card">
           <div class="section-header">
+<<<<<<< HEAD
             <div>
               <h3>API Key（调用凭证）</h3>
               <p class="section-desc">Key 是调用凭证，注册后自动生成。余额才是您购买的 Token 额度。</p>
@@ -342,6 +399,10 @@
               </button>
               <button id="create-key-btn" class="btn btn-primary btn-sm">创建新 Key</button>
             </div>
+=======
+            <div><h3>API Key（调用凭证）</h3><p class="section-desc">Key 是调用凭证，注册后自动生成。余额才是您购买的 Token 额度。</p></div>
+            <button id="create-key-btn" class="btn btn-primary btn-sm">创建新 Key</button>
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
           </div>
           <div id="keys-list"></div>
         </div>
@@ -665,6 +726,7 @@
     </main>
   </div>
 
+<<<<<<< HEAD
   <!-- 支付弹窗（微信扫码支付） -->
   <div id="payment-modal" class="payment-modal" style="display:none">
     <div class="payment-content">
@@ -684,6 +746,33 @@
       </div>
       <p id="pay-error-msg" style="color:var(--danger);font-size:.85rem;text-align:center;margin-top:8px;min-height:1.2em"></p>
       <button class="btn btn-outline btn-block" onclick="closePaymentModal()" style="margin-top:12px">关闭</button>
+=======
+  <!-- 支付弹窗（全局） -->
+  <div id="payment-modal" class="payment-modal" style="display:none">
+    <div class="payment-content">
+      <h4 style="text-align:center;margin-bottom:8px">扫码支付</h4>
+      <p style="text-align:center;color:var(--muted);margin-bottom:16px" id="payment-info"></p>
+      <div class="qr-placeholder" style="text-align:center">
+        <img id="qr-code-image" src="" alt="收款码" style="max-width:220px;max-height:220px;border-radius:8px;display:none">
+        <div id="qr-no-image" style="padding:40px;color:var(--muted)">
+          <span style="font-size:3rem">📱</span>
+          <p style="margin-top:8px">收款码加载中...</p>
+        </div>
+        <p style="font-size:1.2rem;font-weight:700;color:var(--primary);margin-top:8px" id="qr-amount-display"></p>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:4px" id="qr-order-no"></p>
+        <p style="font-size:.75rem;color:var(--warning,#f59e0b);margin-top:12px;line-height:1.5">
+          ⚠️ 金额已由收款码锁定，扫码后<br>请确认支付金额一致后完成支付
+        </p>
+      </div>
+      <p id="pay-error-msg" style="color:var(--danger);font-size:.85rem;text-align:center;margin-top:8px;min-height:1.2em"></p>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-outline btn-block" onclick="closePaymentModal()">取消支付</button>
+        <button class="btn btn-primary btn-block" id="confirm-pay-btn" onclick="confirmPayment()">✅ 我已支付完成</button>
+      </div>
+      <p style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:8px">
+        支付完成后需等待管理员审核到账
+      </p>
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     </div>
   </div>
 
@@ -715,6 +804,7 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- API Key 编辑/创建模态框 -->
   <div id="api-key-modal" class="payment-modal" style="display:none">
     <div class="payment-content" style="max-width:520px">
@@ -727,6 +817,8 @@
     </div>
   </div>
 
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
   <!-- 浮动铃铛（可拖拽，登录后显示） -->
   <div class="floating-bell" id="floating-bell" style="display:none" title="消息通知（可拖拽）">
     <button class="notify-bell" id="notify-bell" onclick="toggleNotifyFloat(event)">
@@ -751,6 +843,7 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- 浮空联系客服 -->
   <button class="cs-float" id="csFloat" title="联系客服" onclick="toggleCsPopup()">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
@@ -782,5 +875,9 @@
     <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">琼ICP备2026009208号</a>
   </div>
 
+=======
+  <script src="/static/app.js"></script>
+  <script>initUserDashboard();</script>
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 </body>
 </html>

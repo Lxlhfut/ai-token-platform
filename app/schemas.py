@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+<<<<<<< HEAD
 import json
 from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
+=======
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, Field
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
 
 class UserRegister(BaseModel):
@@ -39,7 +46,10 @@ class UserOut(BaseModel):
 
 class ApiKeyCreate(BaseModel):
     name: str = "default"
+<<<<<<< HEAD
     allowed_models: Optional[list[str]] = []
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
 
 class ApiKeyOut(BaseModel):
@@ -49,6 +59,7 @@ class ApiKeyOut(BaseModel):
     is_active: bool
     created_at: datetime
     last_used_at: Optional[datetime] = None
+<<<<<<< HEAD
     allowed_models: list[str] = []
 
     @field_validator('allowed_models', mode='before')
@@ -66,6 +77,8 @@ class ApiKeyOut(BaseModel):
         if isinstance(v, list):
             return v
         return []
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
     class Config:
         from_attributes = True
@@ -112,22 +125,30 @@ class ModelPricingCreate(BaseModel):
     model: str
     input_price: float
     output_price: float
+<<<<<<< HEAD
     official_input_price: Optional[float] = 0.0
     official_output_price: Optional[float] = 0.0
     cost_price: Optional[float] = 0.0
     description: Optional[str] = None
     tags: Optional[list[str]] = []
+=======
+    description: Optional[str] = None
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
 
 class ModelPricingUpdate(BaseModel):
     model: Optional[str] = None
     input_price: Optional[float] = None
     output_price: Optional[float] = None
+<<<<<<< HEAD
     official_input_price: Optional[float] = None
     official_output_price: Optional[float] = None
     cost_price: Optional[float] = None
     description: Optional[str] = None
     tags: Optional[list[str]] = None
+=======
+    description: Optional[str] = None
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
     is_active: Optional[bool] = None
 
 
@@ -136,6 +157,7 @@ class ModelPricingOut(BaseModel):
     model: str
     input_price: float
     output_price: float
+<<<<<<< HEAD
     official_input_price: float = 0.0
     official_output_price: float = 0.0
     cost_price: float = 0.0
@@ -167,11 +189,16 @@ class ModelPricingOut(BaseModel):
         if isinstance(v, list):
             return v
         return []
+=======
+    description: Optional[str] = None
+    is_active: bool
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 
     class Config:
         from_attributes = True
 
 
+<<<<<<< HEAD
 # ======= 降级映射 =======
 
 class FallbackCreate(BaseModel):
@@ -223,6 +250,8 @@ class MarginReport(BaseModel):
     summary: dict      # {total_revenue, total_cost, total_profit, overall_margin_pct}
 
 
+=======
+>>>>>>> 9917b3d52cb41738996b4ce0f28b48cbbf2f6a03
 class RechargeRequest(BaseModel):
     user_id: int
     amount: float = Field(gt=0)
